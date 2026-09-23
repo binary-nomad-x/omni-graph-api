@@ -21,6 +21,7 @@ import { ProductImage } from "@gql-prisma-api/modules/productImage/resolver.js";
 import { Query as NovuQuery, Mutation as NovuMutation } from "@gql-prisma-api/modules/novu/resolver.js";
 import { Query as StatsQuery } from "@gql-prisma-api/modules/stats/resolver.js";
 import { Subscription, Query as SubscriptionQuery, Mutation as SubscriptionMutation } from "@gql-prisma-api/modules/subscription/resolver.js";
+import { weatherResolvers } from "@gql-prisma-api/modules/weather/resolver.js";
 import { Discount, Query as DiscountQuery, Mutation as DiscountMutation } from "@gql-prisma-api/modules/discount/resolver.js";
 import { Invoice, Query as InvoiceQuery, Mutation as InvoiceMutation } from "@gql-prisma-api/modules/invoice/resolver.js";
 import { ReturnRequest, Query as ReturnQuery, Mutation as ReturnMutation } from "@gql-prisma-api/modules/return/resolver.js";
@@ -37,6 +38,7 @@ export const resolvers = {
   Query: {
     ...UserQuery,
     ...PostQuery,
+    ...weatherResolvers.Query,
     ...ProductQuery,
     ...OrderQuery,
     ...PaymentQuery,
@@ -63,6 +65,7 @@ export const resolvers = {
   Mutation: {
     ...AuthMutation,
     ...UserMutation,
+    ...weatherResolvers.Mutation,
     ...PostMutation,
     ...ProductMutation,
     ...OrderMutation,
@@ -121,3 +124,5 @@ export const resolvers = {
 };
 
 export type ResolverContext = Context;
+
+export type { WeatherForecast, WeatherCurrent, WeatherHourly } from "@gql-prisma-api/modules/weather/weather.service.js";

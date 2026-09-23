@@ -1,0 +1,40 @@
+type WeatherCurrent {
+  temperature: Float!
+  humidity: Float!
+  weatherCode: Int!
+  weatherDescription: String!
+  weatherIcon: String!
+  severity: String!
+}
+
+type WeatherHourly {
+  time: [String!]!
+  temperature: [Float!]!
+  humidity: [Float!]!
+  precipitation: [Float!]!
+}
+
+type WeatherForecast {
+  latitude: Float!
+  longitude: Float!
+  timezone: String!
+  current: WeatherCurrent!
+  hourly: [WeatherHourly!]!
+  daily: [DailyWeather!]!
+}
+
+type DailyWeather {
+  time: String!
+  tempMax: Float!
+  tempMin: Float!
+  precipitationSum: Float!
+}
+
+extend type Query {
+  currentWeather(lat: Float, lon: Float): WeatherForecast
+  refreshWeather: WeatherForecast
+}
+
+extend type Mutation {
+  refreshWeather: WeatherForecast
+}

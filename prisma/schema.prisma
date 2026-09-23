@@ -968,3 +968,16 @@ model NovuVariable {
   @@unique([groupId, key])
   @@map("novu_variables")
 }
+
+model WeatherSnapshot {
+  id          String   @id @default(cuid())
+  latitude    Float
+  longitude   Float
+  temperature Float
+  humidity    Int
+  weatherCode Int
+  severity    String
+  recordedAt  DateTime @default(now())
+
+  @@index([recordedAt])
+}
