@@ -31,6 +31,7 @@ import { seedInvoices } from "./seed-invoices.js";
 import { seedReturns } from "./seed-returns.js";
 import { seedTickets } from "./seed-tickets.js";
 import { seedUserCategoryFollows } from "./seed-userCategoryFollows.js";
+import { seedNovu } from "./seed-novu.js";
 
 const USER_COUNT = 65;
 const POST_COUNT = 130;
@@ -60,8 +61,13 @@ async function main(): Promise<void> {
   const counts: SeedCounts = createEmptyCounts();
 
   // Phase 1 — Independent tables
-  console.log("[1/8] Users, Tags, Categories...");
-  const [userIds, tagIds, categoryIds] = await Promise.all([seedUsers(ctx, counts, USER_COUNT), seedTags(ctx, counts), seedCategories(ctx, counts)]);
+  console.log("[1/8] Users, Tags, Categories, Novu...");
+  const [userIds, tagIds, categoryIds] = await Promise.all([
+    seedUsers(ctx, counts, USER_COUNT),
+    seedTags(ctx, counts),
+    seedCategories(ctx, counts),
+    seedNovu(ctx, counts),
+  ]);
 
   // Phase 2 — Content tables (depend on users, tags, categories)
   console.log("[2/8] Posts, Products...");
@@ -109,7 +115,7 @@ async function main(): Promise<void> {
 
   // Phase 8 — Invoices, Returns, Support Tickets
   console.log("[8/8] Invoices, Returns, Support Tickets...");
-  await Promise.all([seedInvoices(ctx, counts, orderIds), seedReturns(ctx, counts, userIds, orderIds), seedTickets(ctx, counts, userIds)]);
+  await Promise.all([seedInvoices(ctx, counts, orderIds), seedReturns(ctx, counts, userIds, orderIds), seedTickets(ctx, counts, userIds, orderIds)]);
 
   // Summary
   printElapsed(start);

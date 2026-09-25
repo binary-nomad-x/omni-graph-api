@@ -33,6 +33,9 @@ export async function seedInvoices(ctx: SeedContext, counts: SeedCounts, orderId
     dueDate: Date;
     paidAt: Date | null;
     sentAt: Date | null;
+    reminderSentAt: Date | null;
+    cancelledAt: Date | null;
+    cancelReason: string | null;
   }[] = [];
 
   for (let i = 0; i < orders.length; i++) {
@@ -63,6 +66,11 @@ export async function seedInvoices(ctx: SeedContext, counts: SeedCounts, orderId
       dueDate: faker.date.future(),
       paidAt: isPaid ? faker.date.past() : null,
       sentAt: isPaid ? faker.date.past() : null,
+      reminderSentAt: !isPaid && Math.random() > 0.5 ? faker.date.past() : null,
+      cancelledAt: isCancelled ? faker.date.past() : null,
+      cancelReason: isCancelled
+        ? faker.helpers.arrayElement(["Order cancelled by customer", "Duplicate order", "Payment failed", "Item out of stock"])
+        : null,
     });
   }
 

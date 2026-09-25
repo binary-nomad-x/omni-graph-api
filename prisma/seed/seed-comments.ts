@@ -56,4 +56,19 @@ export async function seedComments(ctx: SeedContext, counts: SeedCounts, userIds
     await ctx.prisma.comment.createMany({ data: replyData });
     counts.comments += replyData.length;
   }
+
+  // Keep post.commentCount accurate
+  const byPost = await ctx.prisma.comment.groupBy({
+    by: ["postId"],
+    _count: { _all: true },
+  });
+
+  await ctx.prisma.$transaction(
+    byPost.map((g) =>
+      ctx.prisma.post.update({
+        where: { id: g.postId },
+        data: { commentCount: g._count._all },
+      }),
+    ),
+  );
 }

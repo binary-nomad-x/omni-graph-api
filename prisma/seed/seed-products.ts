@@ -54,7 +54,7 @@ export async function seedProducts(ctx: SeedContext, counts: SeedCounts, userIds
         warrantyMonths: faker.number.int({ min: 0, max: 36 }),
       },
       imageUrl: faker.image.url(),
-      isActive: true,
+      isActive: Math.random() > 0.07,
       sellerId: faker.helpers.arrayElement(userIds),
       categoryId: faker.helpers.arrayElement(categoryIds),
     };

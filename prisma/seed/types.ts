@@ -40,6 +40,9 @@ export interface SeedCounts {
   tickets: number;
   ticketReplies: number;
   userCategoryFollows: number;
+  novuWorkflows: number;
+  novuVariableGroups: number;
+  novuVariables: number;
 }
 
 export interface AddressSeed {
@@ -92,8 +95,9 @@ export interface MessageSeed {
   isRead: boolean;
   readAt: Date | null;
   deliveredAt: Date | null;
-  attachments: object[];
-  reactions: object;
+  editedAt: Date | null;
+  attachments: object[] | null;
+  reactions: object | null;
   parentId: string | null;
 }
 
@@ -294,9 +298,9 @@ export interface ReviewSeed {
   isRecommended: boolean;
   helpfulCount: number;
   unhelpfulCount: number;
-  pros: string[];
-  cons: string[];
-  images: string[];
+  pros: string[] | null;
+  cons: string[] | null;
+  images: string[] | null;
   responseFromSeller: string | null;
   responseDate: Date | null;
   productId: string;
@@ -358,7 +362,8 @@ export interface TicketReplySeed {
   isStaff: boolean;
   isInternal: boolean;
   isSolution: boolean;
-  attachments: object[];
+  editedAt: Date | null;
+  attachments: object[] | null;
 }
 
 export function createEmptyCounts(): SeedCounts {
@@ -398,5 +403,8 @@ export function createEmptyCounts(): SeedCounts {
     tickets: 0,
     ticketReplies: 0,
     userCategoryFollows: 0,
+    novuWorkflows: 0,
+    novuVariableGroups: 0,
+    novuVariables: 0,
   };
 }

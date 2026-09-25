@@ -67,23 +67,25 @@ export async function seedConversations(ctx: SeedContext, counts: SeedCounts, us
     for (let m = 0; m < messageCount; m++) {
       const sender = m % 2 === 0 ? userA : userB;
       const isRead = m < messageCount - 1;
+      const isEdited = Math.random() > 0.85;
       const messageType = faker.helpers.arrayElement(["text", "text", "text", "image", "attachment"]);
       const attachments =
         messageType === "image" || messageType === "attachment"
           ? Array.from({ length: faker.number.int({ min: 1, max: 3 }) }, () => ({
               url: faker.image.url(),
               name: faker.system.fileName(),
+              size: faker.number.int({ min: 1024, max: 5000000 }),
             }))
-          : [];
+          : null;
       const reactions =
-        Math.random() > 0.6
+        Math.random() > 0.5
           ? {
-              [faker.helpers.arrayElement(["thumbs_up", "heart", "laugh", "wow"])]: faker.helpers.arrayElements([userA, userB], {
+              [faker.helpers.arrayElement(["thumbs_up", "heart", "laugh", "wow", "sad"])]: faker.helpers.arrayElements([userA, userB], {
                 min: 1,
                 max: 2,
               }),
             }
-          : {};
+          : null;
 
       messages.push({
         conversationId: conversation.id,
@@ -93,6 +95,7 @@ export async function seedConversations(ctx: SeedContext, counts: SeedCounts, us
         isRead,
         readAt: isRead ? faker.date.past() : null,
         deliveredAt: faker.date.past(),
+        editedAt: isEdited ? faker.date.recent({ days: 14 }) : null,
         attachments,
         reactions,
         parentId: null,
