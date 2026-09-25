@@ -27,23 +27,31 @@ export async function seedCarts(ctx: SeedContext, counts: SeedCounts, userIds: s
     const items: CartItemSeed[] = [];
     const used = new Set<string>();
     let subtotal = 0;
+    let totalDiscount = 0;
 
     for (let i = 0; i < itemCount; i++) {
       const product = faker.helpers.arrayElement(products);
       if (used.has(product.id)) continue;
       used.add(product.id);
+
       const quantity = faker.number.int({ min: 1, max: 3 });
-      const totalPrice = parseFloat((product.price * quantity).toFixed(2));
-      subtotal += totalPrice;
+      const grossTotal = parseFloat((product.price * quantity).toFixed(2));
+      const discountAmount =
+        Math.random() > 0.4 ? parseFloat((grossTotal * faker.helpers.arrayElement([0.05, 0.1, 0.15, 0.2, 0.25])).toFixed(2)) : 0;
+      const totalPrice = parseFloat((grossTotal - discountAmount).toFixed(2));
+
+      subtotal += grossTotal;
+      totalDiscount += discountAmount;
+
       items.push({
         cartId: cart.id,
         productId: product.id,
         quantity,
         unitPrice: product.price,
-        discountAmount: 0,
+        discountAmount,
         totalPrice,
         notes: Math.random() > 0.7 ? faker.lorem.sentence() : null,
-        isSavedForLater: false,
+        isSavedForLater: Math.random() > 0.9,
       });
     }
 
@@ -57,7 +65,11 @@ export async function seedCarts(ctx: SeedContext, counts: SeedCounts, userIds: s
 
       await ctx.prisma.cart.update({
         where: { id: cart.id },
-        data: { subtotal, total: subtotal },
+        data: {
+          subtotal: parseFloat(subtotal.toFixed(2)),
+          discountAmount: parseFloat(totalDiscount.toFixed(2)),
+          total: parseFloat((subtotal - totalDiscount).toFixed(2)),
+        },
       });
     }
   }

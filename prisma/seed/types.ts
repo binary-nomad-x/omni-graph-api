@@ -81,6 +81,7 @@ export interface CommentSeed {
   authorId: string;
   postId: string;
   parentId: string | null;
+  editedAt: Date | null;
 }
 
 export interface MessageSeed {
@@ -114,6 +115,7 @@ export interface DiscountSeed {
   priority: number;
   maxUsage: number;
   usedCount: number;
+  createdById: string;
   metadata: object;
 }
 

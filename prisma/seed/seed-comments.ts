@@ -8,15 +8,17 @@ export async function seedComments(ctx: SeedContext, counts: SeedCounts, userIds
     const commentCount = faker.number.int({ min: 5, max: 15 });
     for (let j = 0; j < commentCount; j++) {
       const authorId = faker.helpers.arrayElement(userIds);
+      const isEdited = Math.random() > 0.8;
       data.push({
         content: faker.lorem.sentences({ min: 1, max: 4 }),
-        isEdited: Math.random() > 0.8,
-        isApproved: true,
+        isEdited,
+        isApproved: Math.random() > 0.05,
         upvotes: faker.number.int({ min: 0, max: 50 }),
         downvotes: faker.number.int({ min: 0, max: 10 }),
         authorId,
         postId,
         parentId: null,
+        editedAt: isEdited ? faker.date.recent({ days: 30 }) : null,
       });
     }
   }
@@ -35,15 +37,17 @@ export async function seedComments(ctx: SeedContext, counts: SeedCounts, userIds
   for (const comment of commentPool) {
     const replyCount = faker.number.int({ min: 1, max: 3 });
     for (let r = 0; r < replyCount; r++) {
+      const isEdited = Math.random() > 0.85;
       replyData.push({
         content: faker.lorem.sentences({ min: 1, max: 3 }),
-        isEdited: false,
-        isApproved: true,
+        isEdited,
+        isApproved: Math.random() > 0.05,
         upvotes: faker.number.int({ min: 0, max: 20 }),
-        downvotes: 0,
+        downvotes: faker.number.int({ min: 0, max: 10 }),
         authorId: faker.helpers.arrayElement(userIds),
         postId: comment.postId,
         parentId: comment.id,
+        editedAt: isEdited ? faker.date.recent({ days: 30 }) : null,
       });
     }
   }

@@ -90,14 +90,14 @@ async function main(): Promise<void> {
 
   // Phase 5 — Commerce (coupons, orders, payments, shipments, refunds)
   console.log("[5/8] Coupons, Orders, Payments, Shipments, Refunds...");
-  const couponIds = await seedCoupons(ctx, counts);
+  const couponIds = await seedCoupons(ctx, counts, userIds);
   const orderIds = await seedOrders(ctx, counts, userIds, productIds, couponIds);
   await Promise.all([seedPayments(ctx, counts, orderIds), seedShipments(ctx, counts, orderIds)]);
   await seedRefunds(ctx, counts, orderIds);
 
   // Phase 6 — Discounts, Notifications, Subscriptions
   console.log("[6/8] Discounts, Notifications, Subscriptions...");
-  await Promise.all([seedDiscounts(ctx, counts, productIds), seedNotifications(ctx, counts, userIds), seedSubscriptions(ctx, counts, userIds)]);
+  await Promise.all([seedDiscounts(ctx, counts, userIds, productIds), seedNotifications(ctx, counts, userIds), seedSubscriptions(ctx, counts, userIds)]);
 
   // Phase 7 — Saved posts, Post views, Conversations
   console.log("[7/8] Saved Posts, Post Views, Conversations...");

@@ -59,6 +59,7 @@ export async function seedOrders(
     const useCoupon = couponIds.length > 0 && Math.random() > 0.65;
     const couponId = useCoupon ? faker.helpers.arrayElement(couponIds) : null;
     const isCancelled = status === "CANCELLED";
+    const hasTracking = status === "SHIPPED" || status === "DELIVERED";
     const shippingAmount = parseFloat(faker.commerce.price({ min: 5, max: 25 }));
     const taxRate = faker.helpers.arrayElement([0.05, 0.07, 0.08, 0.1, 0.0]);
 
@@ -77,7 +78,7 @@ export async function seedOrders(
       source: faker.helpers.arrayElement(["web", "mobile", "api"]),
       isGift: Math.random() > 0.9,
       giftMessage: Math.random() > 0.9 ? faker.lorem.sentence() : null,
-      trackingUrl: null,
+      trackingUrl: hasTracking ? `https://tracking.example.com/${faker.string.alphanumeric({ length: 12 }).toUpperCase()}` : null,
       couponId,
       estimatedDelivery: faker.date.future(),
       deliveredAt: status === "DELIVERED" ? faker.date.past() : null,
@@ -96,6 +97,8 @@ export async function seedOrders(
       if (!product) continue;
       const quantity = faker.number.int({ min: 1, max: 3 });
       const totalPrice = parseFloat((product.price * quantity).toFixed(2));
+      const discountAmount =
+        Math.random() > 0.4 ? parseFloat((totalPrice * faker.helpers.arrayElement([0.05, 0.1, 0.15, 0.2])).toFixed(2)) : 0;
       subtotal += totalPrice;
       itemData.push({
         orderId,
@@ -105,8 +108,8 @@ export async function seedOrders(
         productName: product.name,
         productSku: product.sku,
         productImage: product.imageUrl,
-        discountAmount: 0,
-        taxAmount: parseFloat((product.price * quantity * taxRate).toFixed(2)),
+        discountAmount,
+        taxAmount: parseFloat((totalPrice * taxRate).toFixed(2)),
         totalPrice,
       });
     }
@@ -122,7 +125,7 @@ export async function seedOrders(
       notes: o.notes || null,
       giftMessage: o.giftMessage || null,
       cancelReason: o.cancelReason || null,
-      trackingUrl: null,
+      trackingUrl: o.trackingUrl || null,
     })),
   });
   counts.orders += orderData.length;
@@ -131,12 +134,13 @@ export async function seedOrders(
   counts.orderItems += itemData.length;
 
   // Calculate totals per order and update
-  const orderTotals = new Map<string, { subtotal: number; tax: number; shipping: number }>();
+  const orderTotals = new Map<string, { subtotal: number; tax: number; shipping: number; itemDiscount: number }>();
 
   for (const item of itemData) {
-    const current = orderTotals.get(item.orderId) ?? { subtotal: 0, tax: 0, shipping: 0 };
+    const current = orderTotals.get(item.orderId) ?? { subtotal: 0, tax: 0, shipping: 0, itemDiscount: 0 };
     current.subtotal += item.totalPrice;
     current.tax += item.taxAmount;
+    current.itemDiscount += item.discountAmount ?? 0;
     orderTotals.set(item.orderId, current);
   }
 
@@ -149,17 +153,18 @@ export async function seedOrders(
     const totals = orderTotals.get(order.id);
     if (!totals) continue;
 
-    let discount = 0;
+    let discount = totals.itemDiscount;
     if (order.couponId) {
       const coupon = couponMap.get(order.couponId);
       if (coupon) {
         if (coupon.discountPercent > 0) {
-          discount = Math.round(totals.subtotal * (coupon.discountPercent / 100) * 100) / 100;
+          let couponDiscount = Math.round(totals.subtotal * (coupon.discountPercent / 100) * 100) / 100;
           if (coupon.maxDiscountAmount > 0) {
-            discount = Math.min(discount, coupon.maxDiscountAmount);
+            couponDiscount = Math.min(couponDiscount, coupon.maxDiscountAmount);
           }
+          discount += couponDiscount;
         } else if (coupon.discountAmount > 0) {
-          discount = coupon.discountAmount;
+          discount += coupon.discountAmount;
         }
       }
     }
@@ -174,13 +179,13 @@ export async function seedOrders(
         subtotal: totals.subtotal,
         taxAmount: totals.tax,
         shippingAmount: totals.shipping,
-        discountAmount: discount,
+        discountAmount: parseFloat(discount.toFixed(2)),
         shippingAddress: order.shippingAddress || null,
         email: order.email || null,
         phone: order.phone || null,
         notes: order.notes || null,
         giftMessage: order.giftMessage || null,
-        trackingUrl: null,
+        trackingUrl: order.trackingUrl || null,
         cancelReason: order.cancelReason || null,
       },
     });

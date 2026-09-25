@@ -37,12 +37,13 @@ export async function seedInvoices(ctx: SeedContext, counts: SeedCounts, orderId
 
   for (let i = 0; i < orders.length; i++) {
     const order = orders[i];
+    const invoiceNumber = `INV-${String(i + 1).padStart(6, "0")}`;
     const isPaid = order.status !== "PENDING" && order.status !== "CANCELLED";
     const isCancelled = order.status === "CANCELLED";
 
     data.push({
       orderId: order.id,
-      invoiceNumber: `INV-${String(i + 1).padStart(6, "0")}`,
+      invoiceNumber,
       amount: order.totalAmount,
       subtotal: order.subtotal,
       taxAmount: order.taxAmount,
@@ -53,7 +54,7 @@ export async function seedInvoices(ctx: SeedContext, counts: SeedCounts, orderId
       notes: Math.random() > 0.7 ? faker.lorem.sentence() : null,
       billingAddress: faker.location.streetAddress(),
       shippingAddress: order.shippingAddress || faker.location.streetAddress(),
-      pdfUrl: null,
+      pdfUrl: isPaid ? `https://cdn.example.com/invoices/${invoiceNumber}.pdf` : null,
       items: [
         { description: "Order items", quantity: 1, unitPrice: order.subtotal },
         { description: "Tax", quantity: 1, unitPrice: order.taxAmount },
