@@ -69,19 +69,3 @@ const wrappedFetchCurrent = async function (opts: any) {
 weatherService.fetchCurrent = wrappedFetchCurrent;
 
 export const weatherMetricsRegister = client.register;
-
-export function registerWeatherMetricsEndpoint(httpServer: any): void {
-  httpServer.get("/metrics", async (req: any, res: any) => {
-    try {
-      res.set("Content-Type", client.register.contentType);
-      res.end(client.register.metrics());
-    } catch (err) {
-      logger.error("Error serving metrics", { error: String(err) });
-      res.status(500).end();
-    }
-  });
-
-  logger.info("Weather Prometheus metrics endpoint registered", {
-    endpoint: "/metrics",
-  });
-}

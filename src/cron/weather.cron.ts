@@ -1,7 +1,7 @@
 import cron, { ScheduledTask } from "node-cron";
 import { WeatherService } from "@gql-prisma-api/modules/weather/weather.service.js";
 import { logger } from "@gql-prisma-api/utils/logger.js";
-import { weatherFetchCounter, weatherConsecutiveFailures, weatherMetricsRegister } from "@gql-prisma-api/lib/weather-metrics.js";
+import { weatherFetchCounter, weatherConsecutiveFailures } from "@gql-prisma-api/lib/weather-metrics.js";
 
 const weather = new WeatherService();
 
@@ -109,20 +109,4 @@ export async function runWeatherCronOnce(): Promise<void> {
   if (data) {
     logger.info(weather.formatSummary(data), weather.toLogPayload(data));
   }
-}
-
-export function registerWeatherMetricsEndpoint(httpServer: any): void {
-  httpServer.get("/metrics", async (req: any, res: any) => {
-    try {
-      res.set("Content-Type", weatherMetricsRegister.contentType);
-      res.end(weatherMetricsRegister.metrics());
-    } catch (err) {
-      logger.error("Error serving metrics", { error: String(err) });
-      res.status(500).end();
-    }
-  });
-
-  logger.info("Weather Prometheus metrics endpoint registered", {
-    endpoint: "/metrics",
-  });
 }
