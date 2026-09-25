@@ -42,7 +42,7 @@ coverage/
 .nyc_output
 
 # zed Editor
-.zed/
+# .zed/
 
 # ai
 .opencode

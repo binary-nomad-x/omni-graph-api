@@ -10,9 +10,18 @@ import { resolvers } from "@gql-prisma-api/modules/index.js";
 import { logger } from "@gql-prisma-api/utils/logger.js";
 import { ApolloServerPluginGraphiQL } from "@gql-prisma-api/plugins/graphiql.js";
 import "@gql-prisma-api/workers/email.worker.js";
-import { startWeatherCron } from "@gql-prisma-api/cron/weather.cron.js";
+import { startWeatherCron, registerWeatherMetricsEndpoint } from "@gql-prisma-api/cron/weather.cron.js";
 
 const PORT = Number(process.env.PORT) || 4000;
+
+import { stopWeatherCron } from "./cron/weather.cron.js";
+
+startWeatherCron();
+
+process.on("SIGTERM", () => {
+  stopWeatherCron();
+  process.exit(0);
+});
 
 const server = new ApolloServer({
   typeDefs,
@@ -101,6 +110,9 @@ httpServer.on("request", (req, res) => {
 server.addPlugin(ApolloServerPluginDrainHttpServer({ httpServer }));
 
 await server.start();
+
+  // Register Prometheus metrics endpoint
+  registerWeatherMetricsEndpoint(httpServer as any);
 
 httpServer.listen(PORT, () => {
   const url = `http://localhost:${PORT}/graphql`;

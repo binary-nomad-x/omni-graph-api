@@ -4,8 +4,8 @@ import { fileURLToPath } from "node:url";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
-const schemaDir = join(__dirname, "..", "src", "schema");
-const outputFile = join(__dirname, "..", "schema.graphql");
+const schemaDir = join(__dirname, "..", "..", "src", "schema");
+const outputFile = join(__dirname, "..", "..", "schema.graphql");
 
 try {
   if (!existsSync(schemaDir)) {
