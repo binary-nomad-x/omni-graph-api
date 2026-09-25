@@ -33,16 +33,20 @@ export async function seedInvoices(ctx: SeedContext, counts: SeedCounts, orderId
     dueDate: Date;
     paidAt: Date | null;
     sentAt: Date | null;
+    reminderSentAt: Date | null;
+    cancelledAt: Date | null;
+    cancelReason: string | null;
   }[] = [];
 
   for (let i = 0; i < orders.length; i++) {
     const order = orders[i];
+    const invoiceNumber = `INV-${String(i + 1).padStart(6, "0")}`;
     const isPaid = order.status !== "PENDING" && order.status !== "CANCELLED";
     const isCancelled = order.status === "CANCELLED";
 
     data.push({
       orderId: order.id,
-      invoiceNumber: `INV-${String(i + 1).padStart(6, "0")}`,
+      invoiceNumber,
       amount: order.totalAmount,
       subtotal: order.subtotal,
       taxAmount: order.taxAmount,
@@ -53,7 +57,7 @@ export async function seedInvoices(ctx: SeedContext, counts: SeedCounts, orderId
       notes: Math.random() > 0.7 ? faker.lorem.sentence() : null,
       billingAddress: faker.location.streetAddress(),
       shippingAddress: order.shippingAddress || faker.location.streetAddress(),
-      pdfUrl: null,
+      pdfUrl: isPaid ? `https://cdn.example.com/invoices/${invoiceNumber}.pdf` : null,
       items: [
         { description: "Order items", quantity: 1, unitPrice: order.subtotal },
         { description: "Tax", quantity: 1, unitPrice: order.taxAmount },
@@ -62,6 +66,11 @@ export async function seedInvoices(ctx: SeedContext, counts: SeedCounts, orderId
       dueDate: faker.date.future(),
       paidAt: isPaid ? faker.date.past() : null,
       sentAt: isPaid ? faker.date.past() : null,
+      reminderSentAt: !isPaid && Math.random() > 0.5 ? faker.date.past() : null,
+      cancelledAt: isCancelled ? faker.date.past() : null,
+      cancelReason: isCancelled
+        ? faker.helpers.arrayElement(["Order cancelled by customer", "Duplicate order", "Payment failed", "Item out of stock"])
+        : null,
     });
   }
 

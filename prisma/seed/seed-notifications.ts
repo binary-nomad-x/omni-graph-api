@@ -8,6 +8,7 @@ const CATEGORIES = ["general", "order", "promotion", "account", "system"];
 export async function seedNotifications(ctx: SeedContext, counts: SeedCounts, userIds: string[]): Promise<void> {
   const data: {
     userId: string;
+    senderId: string | null;
     type: string;
     title: string;
     message: string;
@@ -32,6 +33,7 @@ export async function seedNotifications(ctx: SeedContext, counts: SeedCounts, us
 
       data.push({
         userId,
+        senderId: type !== "system" && Math.random() > 0.5 ? faker.helpers.arrayElement(userIds) : null,
         type,
         title: faker.lorem.sentence({ min: 3, max: 8 }),
         message: faker.lorem.sentences({ min: 1, max: 2 }),

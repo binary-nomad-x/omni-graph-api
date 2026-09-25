@@ -32,7 +32,7 @@ export async function seedPosts(
         readingTime: faker.number.int({ min: 2, max: 15 }),
         published,
         isFeatured: Math.random() > 0.85,
-        isArchived: false,
+        isArchived: Math.random() > 0.97,
         metaTitle: title,
         metaDescription: faker.lorem.sentence(),
         allowComments: faker.datatype.boolean({ probability: 0.9 }),

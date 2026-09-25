@@ -31,6 +31,7 @@ import { seedInvoices } from "./seed-invoices.js";
 import { seedReturns } from "./seed-returns.js";
 import { seedTickets } from "./seed-tickets.js";
 import { seedUserCategoryFollows } from "./seed-userCategoryFollows.js";
+import { seedNovu } from "./seed-novu.js";
 
 const USER_COUNT = 65;
 const POST_COUNT = 130;
@@ -60,8 +61,13 @@ async function main(): Promise<void> {
   const counts: SeedCounts = createEmptyCounts();
 
   // Phase 1 — Independent tables
-  console.log("[1/8] Users, Tags, Categories...");
-  const [userIds, tagIds, categoryIds] = await Promise.all([seedUsers(ctx, counts, USER_COUNT), seedTags(ctx, counts), seedCategories(ctx, counts)]);
+  console.log("[1/8] Users, Tags, Categories, Novu...");
+  const [userIds, tagIds, categoryIds] = await Promise.all([
+    seedUsers(ctx, counts, USER_COUNT),
+    seedTags(ctx, counts),
+    seedCategories(ctx, counts),
+    seedNovu(ctx, counts),
+  ]);
 
   // Phase 2 — Content tables (depend on users, tags, categories)
   console.log("[2/8] Posts, Products...");
@@ -90,14 +96,14 @@ async function main(): Promise<void> {
 
   // Phase 5 — Commerce (coupons, orders, payments, shipments, refunds)
   console.log("[5/8] Coupons, Orders, Payments, Shipments, Refunds...");
-  const couponIds = await seedCoupons(ctx, counts);
+  const couponIds = await seedCoupons(ctx, counts, userIds);
   const orderIds = await seedOrders(ctx, counts, userIds, productIds, couponIds);
   await Promise.all([seedPayments(ctx, counts, orderIds), seedShipments(ctx, counts, orderIds)]);
   await seedRefunds(ctx, counts, orderIds);
 
   // Phase 6 — Discounts, Notifications, Subscriptions
   console.log("[6/8] Discounts, Notifications, Subscriptions...");
-  await Promise.all([seedDiscounts(ctx, counts, productIds), seedNotifications(ctx, counts, userIds), seedSubscriptions(ctx, counts, userIds)]);
+  await Promise.all([seedDiscounts(ctx, counts, userIds, productIds), seedNotifications(ctx, counts, userIds), seedSubscriptions(ctx, counts, userIds)]);
 
   // Phase 7 — Saved posts, Post views, Conversations
   console.log("[7/8] Saved Posts, Post Views, Conversations...");
@@ -109,7 +115,7 @@ async function main(): Promise<void> {
 
   // Phase 8 — Invoices, Returns, Support Tickets
   console.log("[8/8] Invoices, Returns, Support Tickets...");
-  await Promise.all([seedInvoices(ctx, counts, orderIds), seedReturns(ctx, counts, userIds, orderIds), seedTickets(ctx, counts, userIds)]);
+  await Promise.all([seedInvoices(ctx, counts, orderIds), seedReturns(ctx, counts, userIds, orderIds), seedTickets(ctx, counts, userIds, orderIds)]);
 
   // Summary
   printElapsed(start);

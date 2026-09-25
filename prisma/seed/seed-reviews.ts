@@ -16,6 +16,7 @@ export async function seedReviews(ctx: SeedContext, counts: SeedCounts, userIds:
       seen.add(key);
 
       const rating = faker.number.int({ min: 1, max: 5 });
+      const hasImages = Math.random() > 0.6;
 
       data.push({
         rating,
@@ -25,9 +26,9 @@ export async function seedReviews(ctx: SeedContext, counts: SeedCounts, userIds:
         isRecommended: rating >= 3,
         helpfulCount: faker.number.int({ min: 0, max: 100 }),
         unhelpfulCount: faker.number.int({ min: 0, max: 20 }),
-        pros: rating >= 3 ? Array.from({ length: faker.number.int({ min: 1, max: 4 }) }, () => faker.lorem.words(3)) : [],
-        cons: rating <= 3 ? Array.from({ length: faker.number.int({ min: 1, max: 3 }) }, () => faker.lorem.words(3)) : [],
-        images: Math.random() > 0.6 ? Array.from({ length: faker.number.int({ min: 1, max: 3 }) }, () => faker.image.url()) : [],
+        pros: rating >= 3 ? Array.from({ length: faker.number.int({ min: 1, max: 4 }) }, () => faker.lorem.words(3)) : null,
+        cons: rating <= 3 ? Array.from({ length: faker.number.int({ min: 1, max: 3 }) }, () => faker.lorem.words(3)) : null,
+        images: hasImages ? Array.from({ length: faker.number.int({ min: 1, max: 3 }) }, () => faker.image.url()) : null,
         responseFromSeller: Math.random() > 0.7 ? faker.lorem.sentence() : null,
         responseDate: Math.random() > 0.7 ? faker.date.recent({ days: 30 }) : null,
         productId,

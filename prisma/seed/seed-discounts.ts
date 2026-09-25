@@ -3,7 +3,7 @@ import type { SeedContext, SeedCounts, DiscountSeed } from "./types.js";
 
 const DISCOUNT_TYPES = ["PERCENTAGE", "FIXED"];
 
-export async function seedDiscounts(ctx: SeedContext, counts: SeedCounts, productIds: string[]): Promise<void> {
+export async function seedDiscounts(ctx: SeedContext, counts: SeedCounts, userIds: string[], productIds: string[]): Promise<void> {
   const data: DiscountSeed[] = [];
 
   for (const productId of productIds) {
@@ -33,8 +33,9 @@ export async function seedDiscounts(ctx: SeedContext, counts: SeedCounts, produc
       priority: faker.number.int({ min: 0, max: 10 }),
       maxUsage,
       usedCount,
+      createdById: faker.helpers.arrayElement(userIds),
       metadata: {
-        createdBy: "seed",
+        createdBy: faker.helpers.arrayElement(userIds),
         campaign: faker.helpers.arrayElement(["summer", "winter", "spring", "fall", "clearance"]),
       },
     });

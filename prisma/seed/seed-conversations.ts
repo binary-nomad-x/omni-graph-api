@@ -22,7 +22,7 @@ export async function seedConversations(ctx: SeedContext, counts: SeedCounts, us
       data: {
         title: faker.lorem.words(3),
         type: "direct",
-        isArchived: false,
+        isArchived: Math.random() > 0.92,
         isMuted: Math.random() > 0.85,
         participantCount: 2,
         metadata: {
@@ -39,22 +39,22 @@ export async function seedConversations(ctx: SeedContext, counts: SeedCounts, us
         {
           conversationId: conversation.id,
           userId: userA,
-          nickname: null,
-          role: "member",
-          isMuted: false,
-          notificationsEnabled: true,
+          nickname: Math.random() > 0.6 ? faker.internet.username() : null,
+          role: faker.helpers.arrayElement(["member", "member", "member", "admin", "moderator"]),
+          isMuted: Math.random() > 0.9,
+          notificationsEnabled: faker.datatype.boolean({ probability: 0.85 }),
           lastReadAt: faker.date.past(),
-          pinnedAt: Math.random() > 0.9 ? faker.date.past() : null,
+          pinnedAt: Math.random() > 0.85 ? faker.date.past() : null,
         },
         {
           conversationId: conversation.id,
           userId: userB,
-          nickname: null,
-          role: "member",
+          nickname: Math.random() > 0.6 ? faker.internet.username() : null,
+          role: faker.helpers.arrayElement(["member", "member", "member", "admin"]),
           isMuted: Math.random() > 0.9,
-          notificationsEnabled: true,
+          notificationsEnabled: faker.datatype.boolean({ probability: 0.85 }),
           lastReadAt: faker.date.past(),
-          pinnedAt: null,
+          pinnedAt: Math.random() > 0.85 ? faker.date.past() : null,
         },
       ],
     });
@@ -67,17 +67,37 @@ export async function seedConversations(ctx: SeedContext, counts: SeedCounts, us
     for (let m = 0; m < messageCount; m++) {
       const sender = m % 2 === 0 ? userA : userB;
       const isRead = m < messageCount - 1;
+      const isEdited = Math.random() > 0.85;
+      const messageType = faker.helpers.arrayElement(["text", "text", "text", "image", "attachment"]);
+      const attachments =
+        messageType === "image" || messageType === "attachment"
+          ? Array.from({ length: faker.number.int({ min: 1, max: 3 }) }, () => ({
+              url: faker.image.url(),
+              name: faker.system.fileName(),
+              size: faker.number.int({ min: 1024, max: 5000000 }),
+            }))
+          : null;
+      const reactions =
+        Math.random() > 0.5
+          ? {
+              [faker.helpers.arrayElement(["thumbs_up", "heart", "laugh", "wow", "sad"])]: faker.helpers.arrayElements([userA, userB], {
+                min: 1,
+                max: 2,
+              }),
+            }
+          : null;
 
       messages.push({
         conversationId: conversation.id,
         senderId: sender,
         content: faker.lorem.sentences({ min: 1, max: 4 }),
-        type: "text",
+        type: messageType,
         isRead,
         readAt: isRead ? faker.date.past() : null,
         deliveredAt: faker.date.past(),
-        attachments: [],
-        reactions: {},
+        editedAt: isEdited ? faker.date.recent({ days: 14 }) : null,
+        attachments,
+        reactions,
         parentId: null,
       });
     }
