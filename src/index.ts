@@ -10,7 +10,8 @@ import { resolvers } from "@gql-prisma-api/modules/index.js";
 import { logger } from "@gql-prisma-api/utils/logger.js";
 import { ApolloServerPluginGraphiQL } from "@gql-prisma-api/plugins/graphiql.js";
 import "@gql-prisma-api/workers/email.worker.js";
-import { startWeatherCron, registerWeatherMetricsEndpoint } from "@gql-prisma-api/cron/weather.cron.js";
+import { startWeatherCron } from "@gql-prisma-api/cron/weather.cron.js";
+import { weatherMetricsRegister } from "@gql-prisma-api/lib/weather-metrics.js";
 
 const PORT = Number(process.env.PORT) || 4000;
 
@@ -40,7 +41,20 @@ const corsHandler = cors({
 
 const jsonParser = bodyParser.json({ limit: "50mb" });
 
-httpServer.on("request", (req, res) => {
+httpServer.on("request", async (req, res) => {
+  if (req.url?.startsWith("/metrics")) {
+    try {
+      const metrics = await weatherMetricsRegister.metrics();
+      res.setHeader("Content-Type", weatherMetricsRegister.contentType);
+      res.end(metrics);
+    } catch (err) {
+      logger.error("Error serving metrics", { error: String(err) });
+      res.statusCode = 500;
+      res.end();
+    }
+    return;
+  }
+
   corsHandler(req, res, (err) => {
     if (err) {
       res.statusCode = 500;
@@ -110,9 +124,6 @@ httpServer.on("request", (req, res) => {
 server.addPlugin(ApolloServerPluginDrainHttpServer({ httpServer }));
 
 await server.start();
-
-  // Register Prometheus metrics endpoint
-  registerWeatherMetricsEndpoint(httpServer as any);
 
 httpServer.listen(PORT, () => {
   const url = `http://localhost:${PORT}/graphql`;
