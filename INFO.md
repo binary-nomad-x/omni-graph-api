@@ -276,5 +276,9 @@ await SendDeletedEmailJob.dispatch(user);
 - review novu syncing process carefully
 - try to pull all templates and replace all the locals and vice versa
 - try build the novu cli for in-depth demo
+- dev ke environment pe nvou related changes krny se pehly 3 bar poochy ... do you really want to make this change or consequences b btaye achy se... ke after men esa hoga....
+- db record men payload b dalna hai
+- api should be more powerful and efficient
+- novu workflow ke triggers validations ko mazeed strict krna hai....
 
 Aur internally woh BullMQ ko call karta hai. Ye Laravel ke `dispatch()` jaisa API deta hai aur project kaafi clean aur scalable ho jata hai.
