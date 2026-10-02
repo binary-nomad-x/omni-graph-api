@@ -1,85 +1,137 @@
 {
-  "name": "Trial Ending",
-  "workflowId": "trial-ending-rzr9kdb5",
-  "slug": "trial-ending-rzr9kdb5",
-  "description": "Sent before trial expiration to inform customers about the upcoming conversion to a paid subscription.",
+  "name": "Onboarding",
+  "workflowId": "onboarding",
+  "slug": "onboarding",
+  "description": "say welcome to the system",
   "tags": [
-    "subscription"
+    "onboard",
+    "welcome",
+    "system",
+    "done"
   ],
   "active": true,
-  "validatePayload": false,
+  "validatePayload": true,
   "payloadSchema": {
     "type": "object",
     "properties": {
-      "subscription": {
-        "type": "object",
-        "properties": {
-          "plan": {
-            "type": "object",
-            "properties": {
-              "name": {
-                "type": "string"
-              }
-            }
-          },
-          "trialEnd": {
-            "type": "string"
-          },
-          "nextBillingDate": {
-            "type": "string"
-          }
-        }
+      "patientName": {
+        "type": "string",
+        "default": "test_patient",
+        "minLength": 5,
+        "maxLength": 50,
+        "format": "regex",
+        "pattern": "^[A-Z][a-z]+ [A-Z][a-z]+$"
       },
-      "notification": {
-        "type": "object",
-        "properties": {
-          "daysUntilAction": {
-            "type": "string"
-          }
-        }
+      "patientId": {
+        "type": "string",
+        "default": "PAT-100225",
+        "format": "uuid"
       },
-      "billing": {
-        "type": "object",
-        "properties": {
-          "nextChargeDisplayAmount": {
-            "type": "string"
-          }
-        }
+      "caseLabel": {
+        "type": "string",
+        "default": "Case #CC-2026-00125"
       },
-      "payment": {
-        "type": "object",
-        "properties": {
-          "method": {
-            "type": "object",
-            "properties": {
-              "type": {
-                "type": "string"
-              }
-            }
-          }
-        }
+      "caseId": {
+        "type": "string",
+        "default": "CC-2026-00125"
       },
-      "recipientRole": {
-        "type": [
-          "string",
-          "null"
-        ]
+      "caseLink": {
+        "type": "string",
+        "default": "https://example.com/cases/CC-2026-00125"
       },
-      "misc": {
-        "type": "object",
-        "properties": {
-          "reminderDateTime": {
-            "type": "string"
-          }
-        }
+      "reviewerName": {
+        "type": "string",
+        "default": "Dr. Sarah Smith"
+      },
+      "reviewerRole": {
+        "type": "string",
+        "default": "Clinical Reviewer"
+      },
+      "submittedByName": {
+        "type": "string",
+        "default": "Michael Johnson"
+      },
+      "submittedByEmail": {
+        "type": "string",
+        "default": "michael.johnson@example.com"
+      },
+      "recommendationStatus": {
+        "type": "string",
+        "default": "Pending Review"
+      },
+      "recommendationType": {
+        "type": "string"
+      },
+      "submittedAt": {
+        "type": "string",
+        "default": "October 2, 2026 at 3:45 PM"
+      },
+      "companyName": {
+        "type": "string",
+        "default": "Example Healthcare"
+      },
+      "supportLink": {
+        "type": "string",
+        "default": "https://example.com/support"
+      },
+      "unsubscribeLink": {
+        "type": "string",
+        "default": "https://example.com/unsubscribe"
+      },
+      "year": {
+        "type": "string",
+        "default": "2026"
+      },
+      "onboardingLink": {
+        "type": "string"
       }
     },
     "required": [
-      "recipientRole"
+      "patientName",
+      "patientId",
+      "caseLabel",
+      "caseId",
+      "caseLink",
+      "reviewerName",
+      "reviewerRole",
+      "submittedByName",
+      "submittedByEmail",
+      "recommendationStatus",
+      "recommendationType",
+      "submittedAt",
+      "companyName",
+      "supportLink",
+      "unsubscribeLink",
+      "year"
     ]
   },
   "preferences": {
-    "user": null,
+    "user": {
+      "all": {
+        "enabled": true,
+        "readOnly": true
+      },
+      "channels": {
+        "email": {
+          "enabled": true
+        },
+        "sms": {
+          "enabled": true
+        },
+        "in_app": {
+          "enabled": true
+        },
+        "chat": {
+          "enabled": true
+        },
+        "push": {
+          "enabled": true
+        },
+        "tool": {
+          "enabled": true
+        }
+      }
+    },
     "default": {
       "all": {
         "enabled": true,
@@ -100,6 +152,9 @@
         },
         "push": {
           "enabled": true
+        },
+        "tool": {
+          "enabled": true
         }
       }
     }
@@ -108,19 +163,21 @@
   "steps": [
     {
       "stepId": "email-step",
-      "name": "Email to doctor",
+      "name": "onboard user",
       "type": "email",
       "bodyFile": "email-step.html",
       "controlValues": {
         "editorType": "html",
         "disableOutputSanitization": false,
-        "subject": "Your {{payload.subscription.plan.name}} trial ends in {{payload.notification.daysUntilAction}} days",
+        "subject": "Welcome aboard, ! We're excited to have you with us {{subscriber.firstName}}",
         "layoutId": "default-layout",
         "from": {
           "email": "",
           "name": ""
         },
-        "skip": null
+        "useProviderDefaults": false,
+        "replyTo": "",
+        "preheader": ""
       },
       "variables": {
         "type": "object",
@@ -288,71 +345,95 @@
           "payload": {
             "type": "object",
             "properties": {
-              "subscription": {
-                "type": "object",
-                "properties": {
-                  "plan": {
-                    "type": "object",
-                    "properties": {
-                      "name": {
-                        "type": "string"
-                      }
-                    }
-                  },
-                  "trialEnd": {
-                    "type": "string"
-                  },
-                  "nextBillingDate": {
-                    "type": "string"
-                  }
-                }
+              "patientName": {
+                "type": "string",
+                "default": "test_patient",
+                "minLength": 5,
+                "maxLength": 50,
+                "format": "regex",
+                "pattern": "^[A-Z][a-z]+ [A-Z][a-z]+$"
               },
-              "notification": {
-                "type": "object",
-                "properties": {
-                  "daysUntilAction": {
-                    "type": "string"
-                  }
-                }
+              "patientId": {
+                "type": "string",
+                "default": "PAT-100225",
+                "format": "uuid"
               },
-              "billing": {
-                "type": "object",
-                "properties": {
-                  "nextChargeDisplayAmount": {
-                    "type": "string"
-                  }
-                }
+              "caseLabel": {
+                "type": "string",
+                "default": "Case #CC-2026-00125"
               },
-              "payment": {
-                "type": "object",
-                "properties": {
-                  "method": {
-                    "type": "object",
-                    "properties": {
-                      "type": {
-                        "type": "string"
-                      }
-                    }
-                  }
-                }
+              "caseId": {
+                "type": "string",
+                "default": "CC-2026-00125"
               },
-              "recipientRole": {
-                "type": [
-                  "string",
-                  "null"
-                ]
+              "caseLink": {
+                "type": "string",
+                "default": "https://example.com/cases/CC-2026-00125"
               },
-              "misc": {
-                "type": "object",
-                "properties": {
-                  "reminderDateTime": {
-                    "type": "string"
-                  }
-                }
+              "reviewerName": {
+                "type": "string",
+                "default": "Dr. Sarah Smith"
+              },
+              "reviewerRole": {
+                "type": "string",
+                "default": "Clinical Reviewer"
+              },
+              "submittedByName": {
+                "type": "string",
+                "default": "Michael Johnson"
+              },
+              "submittedByEmail": {
+                "type": "string",
+                "default": "michael.johnson@example.com"
+              },
+              "recommendationStatus": {
+                "type": "string",
+                "default": "Pending Review"
+              },
+              "recommendationType": {
+                "type": "string"
+              },
+              "submittedAt": {
+                "type": "string",
+                "default": "October 2, 2026 at 3:45 PM"
+              },
+              "companyName": {
+                "type": "string",
+                "default": "Example Healthcare"
+              },
+              "supportLink": {
+                "type": "string",
+                "default": "https://example.com/support"
+              },
+              "unsubscribeLink": {
+                "type": "string",
+                "default": "https://example.com/unsubscribe"
+              },
+              "year": {
+                "type": "string",
+                "default": "2026"
+              },
+              "onboardingLink": {
+                "type": "string"
               }
             },
             "required": [
-              "recipientRole"
+              "patientName",
+              "patientId",
+              "caseLabel",
+              "caseId",
+              "caseLink",
+              "reviewerName",
+              "reviewerRole",
+              "submittedByName",
+              "submittedByEmail",
+              "recommendationStatus",
+              "recommendationType",
+              "submittedAt",
+              "companyName",
+              "supportLink",
+              "unsubscribeLink",
+              "year"
             ]
           },
           "context": {
@@ -400,19 +481,22 @@
       }
     },
     {
-      "stepId": "email-step-l5vm669i",
-      "name": "Email to Patient",
+      "stepId": "email-step-t2ad94ci",
+      "name": "notify admin",
       "type": "email",
-      "bodyFile": "email-step-l5vm669i.html",
+      "bodyFile": "email-step-t2ad94ci.html",
       "controlValues": {
         "editorType": "html",
         "disableOutputSanitization": false,
-        "subject": "Your subscription got smarter",
+        "subject": "Notfiy admin and update payload",
         "layoutId": "default-layout",
         "from": {
           "email": "",
           "name": ""
-        }
+        },
+        "useProviderDefaults": false,
+        "replyTo": "",
+        "preheader": ""
       },
       "variables": {
         "type": "object",
@@ -587,71 +671,95 @@
           "payload": {
             "type": "object",
             "properties": {
-              "subscription": {
-                "type": "object",
-                "properties": {
-                  "plan": {
-                    "type": "object",
-                    "properties": {
-                      "name": {
-                        "type": "string"
-                      }
-                    }
-                  },
-                  "trialEnd": {
-                    "type": "string"
-                  },
-                  "nextBillingDate": {
-                    "type": "string"
-                  }
-                }
+              "patientName": {
+                "type": "string",
+                "default": "test_patient",
+                "minLength": 5,
+                "maxLength": 50,
+                "format": "regex",
+                "pattern": "^[A-Z][a-z]+ [A-Z][a-z]+$"
               },
-              "notification": {
-                "type": "object",
-                "properties": {
-                  "daysUntilAction": {
-                    "type": "string"
-                  }
-                }
+              "patientId": {
+                "type": "string",
+                "default": "PAT-100225",
+                "format": "uuid"
               },
-              "billing": {
-                "type": "object",
-                "properties": {
-                  "nextChargeDisplayAmount": {
-                    "type": "string"
-                  }
-                }
+              "caseLabel": {
+                "type": "string",
+                "default": "Case #CC-2026-00125"
               },
-              "payment": {
-                "type": "object",
-                "properties": {
-                  "method": {
-                    "type": "object",
-                    "properties": {
-                      "type": {
-                        "type": "string"
-                      }
-                    }
-                  }
-                }
+              "caseId": {
+                "type": "string",
+                "default": "CC-2026-00125"
               },
-              "recipientRole": {
-                "type": [
-                  "string",
-                  "null"
-                ]
+              "caseLink": {
+                "type": "string",
+                "default": "https://example.com/cases/CC-2026-00125"
               },
-              "misc": {
-                "type": "object",
-                "properties": {
-                  "reminderDateTime": {
-                    "type": "string"
-                  }
-                }
+              "reviewerName": {
+                "type": "string",
+                "default": "Dr. Sarah Smith"
+              },
+              "reviewerRole": {
+                "type": "string",
+                "default": "Clinical Reviewer"
+              },
+              "submittedByName": {
+                "type": "string",
+                "default": "Michael Johnson"
+              },
+              "submittedByEmail": {
+                "type": "string",
+                "default": "michael.johnson@example.com"
+              },
+              "recommendationStatus": {
+                "type": "string",
+                "default": "Pending Review"
+              },
+              "recommendationType": {
+                "type": "string"
+              },
+              "submittedAt": {
+                "type": "string",
+                "default": "October 2, 2026 at 3:45 PM"
+              },
+              "companyName": {
+                "type": "string",
+                "default": "Example Healthcare"
+              },
+              "supportLink": {
+                "type": "string",
+                "default": "https://example.com/support"
+              },
+              "unsubscribeLink": {
+                "type": "string",
+                "default": "https://example.com/unsubscribe"
+              },
+              "year": {
+                "type": "string",
+                "default": "2026"
+              },
+              "onboardingLink": {
+                "type": "string"
               }
             },
             "required": [
-              "recipientRole"
+              "patientName",
+              "patientId",
+              "caseLabel",
+              "caseId",
+              "caseLink",
+              "reviewerName",
+              "reviewerRole",
+              "submittedByName",
+              "submittedByEmail",
+              "recommendationStatus",
+              "recommendationType",
+              "submittedAt",
+              "companyName",
+              "supportLink",
+              "unsubscribeLink",
+              "year"
             ]
           },
           "context": {
@@ -699,345 +807,22 @@
       }
     },
     {
-      "stepId": "delay-step",
-      "name": "Delay Step",
-      "type": "delay",
-      "controlValues": {
-        "amount": null,
-        "unit": "seconds",
-        "cron": "",
-        "dynamicKey": "payload.misc.reminderDateTime",
-        "type": "dynamic",
-        "extendToSchedule": true,
-        "skip": {
-          "and": [
-            {
-              "!=": [
-                {
-                  "var": "payload.misc.reminderDateTime"
-                },
-                null
-              ]
-            }
-          ]
-        }
-      },
-      "variables": {
-        "type": "object",
-        "properties": {
-          "workflow": {
-            "type": "object",
-            "description": "Schema representing the workflow entity",
-            "properties": {
-              "workflowId": {
-                "type": "string",
-                "description": "Workflow identifier"
-              },
-              "name": {
-                "type": "string",
-                "description": "Name of the workflow"
-              },
-              "description": {
-                "type": "string",
-                "description": "Description of the workflow"
-              },
-              "tags": {
-                "type": "array",
-                "items": {
-                  "type": "string"
-                }
-              },
-              "severity": {
-                "type": "string",
-                "enum": [
-                  "high",
-                  "medium",
-                  "low",
-                  "none"
-                ],
-                "enumName": "SeverityLevelEnum",
-                "description": "Severity of the workflow"
-              }
-            },
-            "required": [
-              "workflowId",
-              "name"
-            ]
-          },
-          "subscriber": {
-            "type": "object",
-            "description": "Schema representing the subscriber entity",
-            "properties": {
-              "firstName": {
-                "type": "string",
-                "description": "Subscriber's first name"
-              },
-              "lastName": {
-                "type": "string",
-                "description": "Subscriber's last name"
-              },
-              "email": {
-                "type": "string",
-                "description": "Subscriber's email address"
-              },
-              "phone": {
-                "type": "string",
-                "description": "Subscriber's phone number (optional)"
-              },
-              "avatar": {
-                "type": "string",
-                "description": "URL to the subscriber's avatar image (optional)"
-              },
-              "locale": {
-                "type": "string",
-                "description": "Locale for the subscriber (optional)"
-              },
-              "timezone": {
-                "type": "string",
-                "description": "Timezone for the subscriber (optional)"
-              },
-              "subscriberId": {
-                "type": "string",
-                "description": "Unique identifier for the subscriber"
-              },
-              "isOnline": {
-                "type": "boolean",
-                "description": "Indicates if the subscriber is online (optional)"
-              },
-              "lastOnlineAt": {
-                "type": "string",
-                "format": "date-time",
-                "description": "The last time the subscriber was online (optional)"
-              },
-              "data": {
-                "type": "object",
-                "properties": {},
-                "required": [],
-                "additionalProperties": true
-              }
-            },
-            "required": [
-              "subscriberId"
-            ],
-            "additionalProperties": false
-          },
-          "actor": {
-            "type": "object",
-            "description": "Schema representing the actor entity sent during workflow trigger",
-            "properties": {
-              "firstName": {
-                "type": "string",
-                "description": "Subscriber's first name"
-              },
-              "lastName": {
-                "type": "string",
-                "description": "Subscriber's last name"
-              },
-              "email": {
-                "type": "string",
-                "description": "Subscriber's email address"
-              },
-              "phone": {
-                "type": "string",
-                "description": "Subscriber's phone number (optional)"
-              },
-              "avatar": {
-                "type": "string",
-                "description": "URL to the subscriber's avatar image (optional)"
-              },
-              "locale": {
-                "type": "string",
-                "description": "Locale for the subscriber (optional)"
-              },
-              "timezone": {
-                "type": "string",
-                "description": "Timezone for the subscriber (optional)"
-              },
-              "subscriberId": {
-                "type": "string",
-                "description": "Unique identifier for the subscriber"
-              },
-              "isOnline": {
-                "type": "boolean",
-                "description": "Indicates if the subscriber is online (optional)"
-              },
-              "lastOnlineAt": {
-                "type": "string",
-                "format": "date-time",
-                "description": "The last time the subscriber was online (optional)"
-              },
-              "data": {
-                "type": "object",
-                "properties": {},
-                "required": [],
-                "additionalProperties": true
-              }
-            },
-            "required": [
-              "subscriberId"
-            ],
-            "additionalProperties": false
-          },
-          "steps": {
-            "type": "object",
-            "properties": {
-              "email-step": {
-                "type": "object",
-                "properties": {},
-                "required": [],
-                "additionalProperties": false
-              },
-              "email-step-l5vm669i": {
-                "type": "object",
-                "properties": {},
-                "required": [],
-                "additionalProperties": false
-              }
-            },
-            "required": [],
-            "additionalProperties": false,
-            "description": "Previous Steps Results"
-          },
-          "payload": {
-            "type": "object",
-            "properties": {
-              "subscription": {
-                "type": "object",
-                "properties": {
-                  "plan": {
-                    "type": "object",
-                    "properties": {
-                      "name": {
-                        "type": "string"
-                      }
-                    }
-                  },
-                  "trialEnd": {
-                    "type": "string"
-                  },
-                  "nextBillingDate": {
-                    "type": "string"
-                  }
-                }
-              },
-              "notification": {
-                "type": "object",
-                "properties": {
-                  "daysUntilAction": {
-                    "type": "string"
-                  }
-                }
-              },
-              "billing": {
-                "type": "object",
-                "properties": {
-                  "nextChargeDisplayAmount": {
-                    "type": "string"
-                  }
-                }
-              },
-              "payment": {
-                "type": "object",
-                "properties": {
-                  "method": {
-                    "type": "object",
-                    "properties": {
-                      "type": {
-                        "type": "string"
-                      }
-                    }
-                  }
-                }
-              },
-              "recipientRole": {
-                "type": [
-                  "string",
-                  "null"
-                ]
-              },
-              "misc": {
-                "type": "object",
-                "properties": {
-                  "reminderDateTime": {
-                    "type": "string"
-                  }
-                }
-              }
-            },
-            "required": [
-              "recipientRole"
-            ]
-          },
-          "context": {
-            "type": "object",
-            "description": "Context data passed at trigger time following ContextPayload structure",
-            "properties": {},
-            "required": [],
-            "additionalProperties": {
-              "type": "object",
-              "description": "Context value - can be accessed as string or object",
-              "properties": {
-                "id": {
-                  "type": "string",
-                  "description": "Context identifier"
-                },
-                "data": {
-                  "type": "object",
-                  "description": "Additional context data",
-                  "properties": {},
-                  "additionalProperties": true
-                }
-              },
-              "required": [],
-              "additionalProperties": false
-            }
-          },
-          "env": {
-            "type": "object",
-            "description": "Environment variables accessible in workflow templates",
-            "properties": {
-              "name": {
-                "type": "string",
-                "description": "Environment variable: name"
-              },
-              "type": {
-                "type": "string",
-                "description": "Environment variable: type"
-              }
-            },
-            "required": [],
-            "additionalProperties": false
-          }
-        },
-        "additionalProperties": false
-      }
-    },
-    {
-      "stepId": "email-step-wqoii0ty",
-      "name": "Email Step",
+      "stepId": "email-step-zmf9ewcj",
+      "name": "notify reviewing team",
       "type": "email",
-      "bodyFile": "email-step-wqoii0ty.html",
+      "bodyFile": "email-step-zmf9ewcj.html",
       "controlValues": {
         "editorType": "html",
         "disableOutputSanitization": false,
-        "subject": "Trial ending | Attention needed | Delayed workflow",
+        "subject": "notify reviewing team | broader the payload passed to this template",
         "layoutId": "default-layout",
         "from": {
           "email": "",
           "name": ""
         },
-        "skip": {
-          "and": [
-            {
-              "!=": [
-                {
-                  "var": "payload.misc.reminderDateTime"
-                },
-                null
-              ]
-            }
-          ]
-        }
+        "useProviderDefaults": false,
+        "replyTo": "",
+        "preheader": ""
       },
       "variables": {
         "type": "object",
@@ -1204,22 +989,10 @@
                 "required": [],
                 "additionalProperties": false
               },
-              "email-step-l5vm669i": {
+              "email-step-t2ad94ci": {
                 "type": "object",
                 "properties": {},
                 "required": [],
-                "additionalProperties": false
-              },
-              "delay-step": {
-                "type": "object",
-                "properties": {
-                  "duration": {
-                    "type": "number"
-                  }
-                },
-                "required": [
-                  "duration"
-                ],
                 "additionalProperties": false
               }
             },
@@ -1230,71 +1003,95 @@
           "payload": {
             "type": "object",
             "properties": {
-              "subscription": {
-                "type": "object",
-                "properties": {
-                  "plan": {
-                    "type": "object",
-                    "properties": {
-                      "name": {
-                        "type": "string"
-                      }
-                    }
-                  },
-                  "trialEnd": {
-                    "type": "string"
-                  },
-                  "nextBillingDate": {
-                    "type": "string"
-                  }
-                }
+              "patientName": {
+                "type": "string",
+                "default": "test_patient",
+                "minLength": 5,
+                "maxLength": 50,
+                "format": "regex",
+                "pattern": "^[A-Z][a-z]+ [A-Z][a-z]+$"
               },
-              "notification": {
-                "type": "object",
-                "properties": {
-                  "daysUntilAction": {
-                    "type": "string"
-                  }
-                }
+              "patientId": {
+                "type": "string",
+                "default": "PAT-100225",
+                "format": "uuid"
               },
-              "billing": {
-                "type": "object",
-                "properties": {
-                  "nextChargeDisplayAmount": {
-                    "type": "string"
-                  }
-                }
+              "caseLabel": {
+                "type": "string",
+                "default": "Case #CC-2026-00125"
               },
-              "payment": {
-                "type": "object",
-                "properties": {
-                  "method": {
-                    "type": "object",
-                    "properties": {
-                      "type": {
-                        "type": "string"
-                      }
-                    }
-                  }
-                }
+              "caseId": {
+                "type": "string",
+                "default": "CC-2026-00125"
               },
-              "recipientRole": {
-                "type": [
-                  "string",
-                  "null"
-                ]
+              "caseLink": {
+                "type": "string",
+                "default": "https://example.com/cases/CC-2026-00125"
               },
-              "misc": {
-                "type": "object",
-                "properties": {
-                  "reminderDateTime": {
-                    "type": "string"
-                  }
-                }
+              "reviewerName": {
+                "type": "string",
+                "default": "Dr. Sarah Smith"
+              },
+              "reviewerRole": {
+                "type": "string",
+                "default": "Clinical Reviewer"
+              },
+              "submittedByName": {
+                "type": "string",
+                "default": "Michael Johnson"
+              },
+              "submittedByEmail": {
+                "type": "string",
+                "default": "michael.johnson@example.com"
+              },
+              "recommendationStatus": {
+                "type": "string",
+                "default": "Pending Review"
+              },
+              "recommendationType": {
+                "type": "string"
+              },
+              "submittedAt": {
+                "type": "string",
+                "default": "October 2, 2026 at 3:45 PM"
+              },
+              "companyName": {
+                "type": "string",
+                "default": "Example Healthcare"
+              },
+              "supportLink": {
+                "type": "string",
+                "default": "https://example.com/support"
+              },
+              "unsubscribeLink": {
+                "type": "string",
+                "default": "https://example.com/unsubscribe"
+              },
+              "year": {
+                "type": "string",
+                "default": "2026"
+              },
+              "onboardingLink": {
+                "type": "string"
               }
             },
             "required": [
-              "recipientRole"
+              "patientName",
+              "patientId",
+              "caseLabel",
+              "caseId",
+              "caseLink",
+              "reviewerName",
+              "reviewerRole",
+              "submittedByName",
+              "submittedByEmail",
+              "recommendationStatus",
+              "recommendationType",
+              "submittedAt",
+              "companyName",
+              "supportLink",
+              "unsubscribeLink",
+              "year"
             ]
           },
           "context": {
@@ -1342,5 +1139,5 @@
       }
     }
   ],
-  "dashboardHash": "27878fbe57a8"
+  "dashboardHash": "85526dd3a4eb"
 }
