@@ -148,7 +148,7 @@ class Logger {
   }
 
   critical(message: string, meta?: unknown): void {
-    this.log("critical", message, meta);
+    this.log('critical', message, meta);
   }
 
   alert(message: string, meta?: unknown): void {
