@@ -1,7 +1,16 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
+import {inspect} from "node:util";
 
-export type LogLevel = "debug" | "info" | "notice" | "warning" | "error" | "critical" | "alert" | "emergency";
+export type LogLevel =
+  | "debug"
+  | "info"
+  | "notice"
+  | "warning"
+  | "error"
+  | "critical"
+  | "alert"
+  | "emergency";
 
 const LEVEL_PRIORITY: Record<LogLevel, number> = {
   debug: 0,
@@ -26,21 +35,77 @@ const LOG_LEVEL_NAMES: Record<LogLevel, string> = {
 };
 
 const LOG_DIR = path.resolve(process.cwd(), "logs");
-const MIN_LEVEL: LogLevel = (process.env.LOG_LEVEL as LogLevel) || "debug";
+
+function getMinLevel(): LogLevel {
+  const level = (process.env.LOG_LEVEL || "debug").toLowerCase();
+
+  return level in LEVEL_PRIORITY
+    ? (level as LogLevel)
+    : "debug";
+}
+
+function getEnvironment(): string {
+  return process.env.LOG_CHANNEL_NAME
+    || (process.env.NODE_ENV === "production"
+      ? "production"
+      : "local");
+}
+
+function formatMeta(meta?: unknown): string {
+  if (meta === undefined) return "";
+
+  if (meta instanceof Error) {
+    return ` ${JSON.stringify({
+      exception: meta.name,
+      message: meta.message,
+      stack: meta.stack,
+    })}`;
+  }
+
+  try {
+    const serialized = JSON.stringify(meta);
+
+    if (serialized !== undefined) {
+      return ` ${serialized}`;
+    }
+  } catch {
+    // Handle circular references below.
+  }
+
+  return ` ${inspect(meta, {
+    depth: 5,
+    breakLength: Infinity,
+    compact: true,
+  })}`;
+}
 
 class Logger {
   private get env(): string {
-    return process.env.NODE_ENV || "development";
+    return getEnvironment();
   }
 
-  private log(level: LogLevel, message: string, meta?: unknown): void {
-    if (LEVEL_PRIORITY[level] < LEVEL_PRIORITY[MIN_LEVEL]) return;
+  private log(
+    level: LogLevel,
+    message: string,
+    meta?: unknown,
+  ): void {
+    if (LEVEL_PRIORITY[level] < LEVEL_PRIORITY[getMinLevel()]) {
+      return;
+    }
 
-    const timestamp = new Date().toISOString().replace("T", " ").slice(0, 19);
-    const metaStr = meta !== undefined ? ` ${JSON.stringify(meta)}` : "";
-    const line = `[${timestamp}] ${this.env}.${LOG_LEVEL_NAMES[level]}: ${message}${metaStr}\n`;
+    const timestamp = new Date()
+      .toISOString()
+      .replace("T", " ")
+      .replace(/\.\d{3}Z$/, "");
 
-    if (LEVEL_PRIORITY[level] >= LEVEL_PRIORITY["error"]) {
+    const metaStr = formatMeta(meta);
+
+    // Laravel / Monolog-style single-line log entry.
+    const line =
+      `[${timestamp}] ${this.env}.${LOG_LEVEL_NAMES[level]}: ` +
+      `${message}${metaStr}\n`;
+
+    if (LEVEL_PRIORITY[level] >= LEVEL_PRIORITY.error) {
       process.stderr.write(line);
     } else {
       process.stdout.write(line);
@@ -51,12 +116,14 @@ class Logger {
 
   private writeToFile(line: string): void {
     try {
-      if (!fs.existsSync(LOG_DIR)) fs.mkdirSync(LOG_DIR, { recursive: true });
+      fs.mkdirSync(LOG_DIR, {recursive: true});
+
       const date = new Date().toISOString().slice(0, 10);
       const filePath = path.join(LOG_DIR, `laravel-${date}.log`);
-      fs.appendFileSync(filePath, line, "utf-8");
+
+      fs.appendFileSync(filePath, line, "utf8");
     } catch {
-      // Silently fail - logging should never crash the app
+      // Logging must never crash the application.
     }
   }
 
