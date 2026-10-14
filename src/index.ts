@@ -1,6 +1,8 @@
 import "dotenv/config";
+import "reflect-metadata";
 import http from "http";
 import { ApolloServer, HeaderMap } from "@apollo/server";
+import { startStandaloneServer } from "@apollo/server/standalone";
 import { ApolloServerPluginDrainHttpServer } from "@apollo/server/plugin/drainHttpServer";
 import cors from "cors";
 import bodyParser from "body-parser";
@@ -136,6 +138,24 @@ httpServer.listen(PORT, () => {
   logger.info("GraphQL endpoint ready", { url });
 
   startWeatherCron();
+
+  void (async () => {
+    try {
+      const { createInvoiceCodeFirstSchema } = await import("@gql-prisma-api/modules/invoice/typegraphql/index.js");
+      const { ApolloServer } = await import("@apollo/server");
+      const schema = await createInvoiceCodeFirstSchema();
+      const codeFirstServer = new ApolloServer({ schema });
+      const { url: codeFirstUrl } = await startStandaloneServer(codeFirstServer, {
+        listen: { port: Number(process.env.CODEFIRST_PORT) || 4001 },
+        context: ({ req }) => createContext({ req: req as any }),
+      });
+      logger.info("Invoice code-first endpoint ready", { url: codeFirstUrl });
+    } catch (err) {
+      logger.error("Invoice code-first endpoint failed to start", {
+        error: err instanceof Error ? err.message : String(err),
+      });
+    }
+  })();
 });
 
 process.on("uncaughtException", (err) => {
