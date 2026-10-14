@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import type { WorkflowJson, LayoutJson } from "./types.js";
+import type { LayoutJson, WorkflowJson } from "./types.js";
 
 function stripArtifacts<T>(value: T): T {
   const copy = JSON.parse(JSON.stringify(value)) as Record<string, unknown>;

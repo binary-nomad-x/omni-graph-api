@@ -15,95 +15,58 @@
     "type": "object",
     "properties": {
       "patientName": {
-        "type": "string",
-        "default": "test_patient",
-        "minLength": 5,
-        "maxLength": 50,
-        "format": "regex",
-        "pattern": "^[A-Z][a-z]+ [A-Z][a-z]+$"
+        "type": "string"
       },
       "patientId": {
-        "type": "string",
-        "default": "PAT-100225",
-        "format": "uuid"
+        "type": "string"
       },
       "caseLabel": {
-        "type": "string",
-        "default": "Case #CC-2026-00125"
+        "type": "string"
       },
       "caseId": {
-        "type": "string",
-        "default": "CC-2026-00125"
+        "type": "string"
       },
       "caseLink": {
-        "type": "string",
-        "default": "https://example.com/cases/CC-2026-00125"
+        "type": "string"
       },
       "reviewerName": {
-        "type": "string",
-        "default": "Dr. Sarah Smith"
+        "type": "string"
       },
       "reviewerRole": {
-        "type": "string",
-        "default": "Clinical Reviewer"
+        "type": "string"
       },
       "submittedByName": {
-        "type": "string",
-        "default": "Michael Johnson"
+        "type": "string"
       },
       "submittedByEmail": {
-        "type": "string",
-        "default": "michael.johnson@example.com"
+        "type": "string"
       },
       "recommendationStatus": {
-        "type": "string",
-        "default": "Pending Review"
+        "type": "string"
       },
       "recommendationType": {
         "type": "string"
       },
       "submittedAt": {
-        "type": "string",
-        "default": "October 2, 2026 at 3:45 PM"
+        "type": "string"
       },
       "companyName": {
-        "type": "string",
-        "default": "Example Healthcare"
+        "type": "string"
       },
       "supportLink": {
-        "type": "string",
-        "default": "https://example.com/support"
+        "type": "string"
       },
       "unsubscribeLink": {
-        "type": "string",
-        "default": "https://example.com/unsubscribe"
+        "type": "string"
       },
       "year": {
-        "type": "string",
-        "default": "2026"
+        "type": "string"
       },
       "onboardingLink": {
         "type": "string"
       }
     },
-    "required": [
-      "patientName",
-      "patientId",
-      "caseLabel",
-      "caseId",
-      "caseLink",
-      "reviewerName",
-      "reviewerRole",
-      "submittedByName",
-      "submittedByEmail",
-      "recommendationStatus",
-      "recommendationType",
-      "submittedAt",
-      "companyName",
-      "supportLink",
-      "unsubscribeLink",
-      "year"
-    ]
+    "required": []
   },
   "preferences": {
     "user": {
@@ -346,95 +309,58 @@
             "type": "object",
             "properties": {
               "patientName": {
-                "type": "string",
-                "default": "test_patient",
-                "minLength": 5,
-                "maxLength": 50,
-                "format": "regex",
-                "pattern": "^[A-Z][a-z]+ [A-Z][a-z]+$"
+                "type": "string"
               },
               "patientId": {
-                "type": "string",
-                "default": "PAT-100225",
-                "format": "uuid"
+                "type": "string"
               },
               "caseLabel": {
-                "type": "string",
-                "default": "Case #CC-2026-00125"
+                "type": "string"
               },
               "caseId": {
-                "type": "string",
-                "default": "CC-2026-00125"
+                "type": "string"
               },
               "caseLink": {
-                "type": "string",
-                "default": "https://example.com/cases/CC-2026-00125"
+                "type": "string"
               },
               "reviewerName": {
-                "type": "string",
-                "default": "Dr. Sarah Smith"
+                "type": "string"
               },
               "reviewerRole": {
-                "type": "string",
-                "default": "Clinical Reviewer"
+                "type": "string"
               },
               "submittedByName": {
-                "type": "string",
-                "default": "Michael Johnson"
+                "type": "string"
               },
               "submittedByEmail": {
-                "type": "string",
-                "default": "michael.johnson@example.com"
+                "type": "string"
               },
               "recommendationStatus": {
-                "type": "string",
-                "default": "Pending Review"
+                "type": "string"
               },
               "recommendationType": {
                 "type": "string"
               },
               "submittedAt": {
-                "type": "string",
-                "default": "October 2, 2026 at 3:45 PM"
+                "type": "string"
               },
               "companyName": {
-                "type": "string",
-                "default": "Example Healthcare"
+                "type": "string"
               },
               "supportLink": {
-                "type": "string",
-                "default": "https://example.com/support"
+                "type": "string"
               },
               "unsubscribeLink": {
-                "type": "string",
-                "default": "https://example.com/unsubscribe"
+                "type": "string"
               },
               "year": {
-                "type": "string",
-                "default": "2026"
+                "type": "string"
               },
               "onboardingLink": {
                 "type": "string"
               }
             },
-            "required": [
-              "patientName",
-              "patientId",
-              "caseLabel",
-              "caseId",
-              "caseLink",
-              "reviewerName",
-              "reviewerRole",
-              "submittedByName",
-              "submittedByEmail",
-              "recommendationStatus",
-              "recommendationType",
-              "submittedAt",
-              "companyName",
-              "supportLink",
-              "unsubscribeLink",
-              "year"
-            ]
+            "required": []
           },
           "context": {
             "type": "object",
@@ -672,95 +598,58 @@
             "type": "object",
             "properties": {
               "patientName": {
-                "type": "string",
-                "default": "test_patient",
-                "minLength": 5,
-                "maxLength": 50,
-                "format": "regex",
-                "pattern": "^[A-Z][a-z]+ [A-Z][a-z]+$"
+                "type": "string"
               },
               "patientId": {
-                "type": "string",
-                "default": "PAT-100225",
-                "format": "uuid"
+                "type": "string"
               },
               "caseLabel": {
-                "type": "string",
-                "default": "Case #CC-2026-00125"
+                "type": "string"
               },
               "caseId": {
-                "type": "string",
-                "default": "CC-2026-00125"
+                "type": "string"
               },
               "caseLink": {
-                "type": "string",
-                "default": "https://example.com/cases/CC-2026-00125"
+                "type": "string"
               },
               "reviewerName": {
-                "type": "string",
-                "default": "Dr. Sarah Smith"
+                "type": "string"
               },
               "reviewerRole": {
-                "type": "string",
-                "default": "Clinical Reviewer"
+                "type": "string"
               },
               "submittedByName": {
-                "type": "string",
-                "default": "Michael Johnson"
+                "type": "string"
               },
               "submittedByEmail": {
-                "type": "string",
-                "default": "michael.johnson@example.com"
+                "type": "string"
               },
               "recommendationStatus": {
-                "type": "string",
-                "default": "Pending Review"
+                "type": "string"
               },
               "recommendationType": {
                 "type": "string"
               },
               "submittedAt": {
-                "type": "string",
-                "default": "October 2, 2026 at 3:45 PM"
+                "type": "string"
               },
               "companyName": {
-                "type": "string",
-                "default": "Example Healthcare"
+                "type": "string"
               },
               "supportLink": {
-                "type": "string",
-                "default": "https://example.com/support"
+                "type": "string"
               },
               "unsubscribeLink": {
-                "type": "string",
-                "default": "https://example.com/unsubscribe"
+                "type": "string"
               },
               "year": {
-                "type": "string",
-                "default": "2026"
+                "type": "string"
               },
               "onboardingLink": {
                 "type": "string"
               }
             },
-            "required": [
-              "patientName",
-              "patientId",
-              "caseLabel",
-              "caseId",
-              "caseLink",
-              "reviewerName",
-              "reviewerRole",
-              "submittedByName",
-              "submittedByEmail",
-              "recommendationStatus",
-              "recommendationType",
-              "submittedAt",
-              "companyName",
-              "supportLink",
-              "unsubscribeLink",
-              "year"
-            ]
+            "required": []
           },
           "context": {
             "type": "object",
@@ -1004,95 +893,58 @@
             "type": "object",
             "properties": {
               "patientName": {
-                "type": "string",
-                "default": "test_patient",
-                "minLength": 5,
-                "maxLength": 50,
-                "format": "regex",
-                "pattern": "^[A-Z][a-z]+ [A-Z][a-z]+$"
+                "type": "string"
               },
               "patientId": {
-                "type": "string",
-                "default": "PAT-100225",
-                "format": "uuid"
+                "type": "string"
               },
               "caseLabel": {
-                "type": "string",
-                "default": "Case #CC-2026-00125"
+                "type": "string"
               },
               "caseId": {
-                "type": "string",
-                "default": "CC-2026-00125"
+                "type": "string"
               },
               "caseLink": {
-                "type": "string",
-                "default": "https://example.com/cases/CC-2026-00125"
+                "type": "string"
               },
               "reviewerName": {
-                "type": "string",
-                "default": "Dr. Sarah Smith"
+                "type": "string"
               },
               "reviewerRole": {
-                "type": "string",
-                "default": "Clinical Reviewer"
+                "type": "string"
               },
               "submittedByName": {
-                "type": "string",
-                "default": "Michael Johnson"
+                "type": "string"
               },
               "submittedByEmail": {
-                "type": "string",
-                "default": "michael.johnson@example.com"
+                "type": "string"
               },
               "recommendationStatus": {
-                "type": "string",
-                "default": "Pending Review"
+                "type": "string"
               },
               "recommendationType": {
                 "type": "string"
               },
               "submittedAt": {
-                "type": "string",
-                "default": "October 2, 2026 at 3:45 PM"
+                "type": "string"
               },
               "companyName": {
-                "type": "string",
-                "default": "Example Healthcare"
+                "type": "string"
               },
               "supportLink": {
-                "type": "string",
-                "default": "https://example.com/support"
+                "type": "string"
               },
               "unsubscribeLink": {
-                "type": "string",
-                "default": "https://example.com/unsubscribe"
+                "type": "string"
               },
               "year": {
-                "type": "string",
-                "default": "2026"
+                "type": "string"
               },
               "onboardingLink": {
                 "type": "string"
               }
             },
-            "required": [
-              "patientName",
-              "patientId",
-              "caseLabel",
-              "caseId",
-              "caseLink",
-              "reviewerName",
-              "reviewerRole",
-              "submittedByName",
-              "submittedByEmail",
-              "recommendationStatus",
-              "recommendationType",
-              "submittedAt",
-              "companyName",
-              "supportLink",
-              "unsubscribeLink",
-              "year"
-            ]
+            "required": []
           },
           "context": {
             "type": "object",
@@ -1139,5 +991,5 @@
       }
     }
   ],
-  "dashboardHash": "85526dd3a4eb"
+  "dashboardHash": "86dd31ca9199"
 }

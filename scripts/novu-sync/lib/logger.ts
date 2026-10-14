@@ -1,4 +1,4 @@
-import { appendFileSync, existsSync, mkdirSync, copyFileSync, rmSync } from "node:fs";
+import { appendFileSync, copyFileSync, existsSync, mkdirSync, rmSync } from "node:fs";
 import { resolve } from "node:path";
 import { config } from "./config.js";
 
@@ -37,8 +37,14 @@ export class RunLogger {
     const line = JSON.stringify(entry) + "\n";
     appendFileSync(this.logFile, line, "utf-8");
     // update latest.log by copy (atomic-ish on most OS)
-    try { rmSync(this.latestLink, { force: true }); } catch { /* ignore */ }
-    try { copyFileSync(this.logFile, this.latestLink); } catch { /* ignore */ }
+    try {
+      rmSync(this.latestLink, { force: true });
+    } catch { /* ignore */
+    }
+    try {
+      copyFileSync(this.logFile, this.latestLink);
+    } catch { /* ignore */
+    }
     // also print to stderr
     this.print(level, message, data);
   }
@@ -50,7 +56,9 @@ export class RunLogger {
   }
 
   info(message: string, data?: unknown): void { this.write("info", message, data); }
+
   warn(message: string, data?: unknown): void { this.write("warn", message, data); }
+
   error(message: string, data?: unknown): void { this.write("error", message, data); }
 
   summary(): { logFile: string; entries: number } {

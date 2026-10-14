@@ -1,16 +1,22 @@
-import { existsSync, mkdirSync } from "node:fs";
+import { existsSync } from "node:fs";
 import { resolve } from "node:path";
-import { NovuApiClient, ApiError } from "./api-client.js";
+import { ApiError, NovuApiClient } from "./api-client.js";
 import { RunLogger } from "./logger.js";
-import { hashWorkflow, hashLayout } from "./hashing.js";
+import { hashLayout, hashWorkflow } from "./hashing.js";
 import {
-  discoverWorkflowDirs, loadAllWorkflows, loadWorkflow, saveWorkflow, removeWorkflowDir,
-  discoverLayoutFiles, loadAllLayouts, loadLayout, saveLayout, removeLayoutFile,
-  getWorkflowsDir, getLayoutsDir,
+  getLayoutsDir,
+  getWorkflowsDir,
+  loadAllLayouts,
+  loadAllWorkflows,
+  loadLayout,
+  loadWorkflow,
+  removeLayoutFile,
+  removeWorkflowDir,
+  saveLayout,
+  saveWorkflow,
 } from "./discover.js";
-import { ensureDir, writeJsonAtomic, readJson, readText, writeTextAtomic, rmDirRecursive } from "./file-utils.js";
-import type { WorkflowJson, LayoutJson, WorkflowStepJson, SyncResult, SyncSummary } from "./types.js";
-import { config } from "./config.js";
+import { ensureDir, writeJsonAtomic, writeTextAtomic } from "./file-utils.js";
+import type { LayoutJson, SyncResult, SyncSummary, WorkflowJson } from "./types.js";
 
 // ─── API response normalizers ─────────────────────────────────
 
