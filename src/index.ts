@@ -12,10 +12,9 @@ import { ApolloServerPluginGraphiQL } from "@gql-prisma-api/plugins/graphiql.js"
 import "@gql-prisma-api/workers/email.worker.js";
 import { startWeatherCron } from "@gql-prisma-api/cron/weather.cron.js";
 import { weatherMetricsRegister } from "@gql-prisma-api/lib/weather-metrics.js";
+import { stopWeatherCron } from "./cron/weather.cron.js";
 
 const PORT = Number(process.env.PORT) || 4000;
-
-import { stopWeatherCron } from "./cron/weather.cron.js";
 
 startWeatherCron();
 
@@ -42,6 +41,12 @@ const corsHandler = cors({
 const jsonParser = bodyParser.json({ limit: "50mb" });
 
 httpServer.on("request", async (req, res) => {
+  if (req.url?.startsWith("/health")) {
+    res.setHeader("Content-Type", "application/json");
+    res.end(JSON.stringify({ status: "ok", uptime: process.uptime(), timestamp: new Date().toISOString() }));
+    return;
+  }
+
   if (req.url?.startsWith("/metrics")) {
     try {
       const metrics = await weatherMetricsRegister.metrics();
