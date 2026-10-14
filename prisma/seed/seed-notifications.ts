@@ -1,7 +1,7 @@
 import { faker } from "@faker-js/faker";
 import type { SeedContext, SeedCounts } from "./types.js";
 
-const TYPES = ["info", "warning", "success", "error", "promotion", "reminder"] as const;
+const TYPES = ["info", "warning", "success", "error", "promotion", "reminder", 'system'] as const;
 const CHANNELS = ["in-app", "email", "sms", "push"];
 const CATEGORIES = ["general", "order", "promotion", "account", "system"];
 
