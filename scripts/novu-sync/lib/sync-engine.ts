@@ -334,11 +334,19 @@ export class SyncEngine {
           const ok = saveLayout(layout, this.log);
           if (ok) {
             summary.created++;
-            summary.results.push({ workflowId: layout.layoutId, action: "create", detail: `Pulled layout ${layout.slug}` });
+            summary.results.push({
+              workflowId: layout.layoutId,
+              action: "create",
+              detail: `Pulled layout ${layout.slug}`
+            });
             if (opts.dryRun) this.log.info(`[DRY-RUN] Would pull layout: ${layout.slug}`);
           } else {
             summary.errors++;
-            summary.results.push({ workflowId: layout.layoutId, action: "error", detail: `Failed to save layout ${layout.slug}` });
+            summary.results.push({
+              workflowId: layout.layoutId,
+              action: "error",
+              detail: `Failed to save layout ${layout.slug}`
+            });
           }
         }
       } catch (err) {
@@ -668,11 +676,21 @@ export class SyncEngine {
   private aggregate(summary: SyncSummary, result: SyncResult): void {
     summary.results.push(result);
     switch (result.action) {
-      case "create": summary.created++; break;
-      case "update": summary.updated++; break;
-      case "delete": summary.deleted++; break;
-      case "skip": summary.skipped++; break;
-      case "error": summary.errors++; break;
+      case "create":
+        summary.created++;
+        break;
+      case "update":
+        summary.updated++;
+        break;
+      case "delete":
+        summary.deleted++;
+        break;
+      case "skip":
+        summary.skipped++;
+        break;
+      case "error":
+        summary.errors++;
+        break;
     }
   }
 
