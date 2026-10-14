@@ -59,6 +59,8 @@ export class RunLogger {
 
   warn(message: string, data?: unknown): void { this.write("warn", message, data); }
 
+  // critical(message: string, data?: unknown): void { this.write('critical', message, data)}
+
   error(message: string, data?: unknown): void { this.write("error", message, data); }
 
   summary(): { logFile: string; entries: number } {
