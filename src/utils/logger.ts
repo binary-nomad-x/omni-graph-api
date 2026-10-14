@@ -1,6 +1,6 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
-import {inspect} from "node:util";
+import { inspect } from "node:util";
 
 export type LogLevel =
   | "debug"
@@ -117,7 +117,7 @@ class Logger {
 
   private writeToFile(line: string): void {
     try {
-      fs.mkdirSync(LOG_DIR, {recursive: true});
+      fs.mkdirSync(LOG_DIR, { recursive: true });
 
       const date = new Date().toISOString().slice(0, 10);
       const filePath = path.join(LOG_DIR, `laravel-${date}.log`);
