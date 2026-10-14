@@ -1,4 +1,4 @@
-import type { VariableType } from "./types/index.js";
+import type { VariableType } from "../models/index.js";
 
 export interface CreateVariableGroupInput {
   name: string;

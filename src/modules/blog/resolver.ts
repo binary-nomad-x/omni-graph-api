@@ -1,7 +1,7 @@
 import type { Context } from "@gql-prisma-api/types/context.js";
 import type { Post as PostModel, Tag as TagModel, Category as CategoryModel } from "@prisma/client";
 import type { IdArg, PostFilterArgs } from "@gql-prisma-api/types/graphql.js";
-import type { CreatePostInput, UpdatePostInput, CreateCommentInput, CreateCategoryInput } from "@gql-prisma-api/modules/blog/inputs.js";
+import type { CreatePostInput, UpdatePostInput, CreateCommentInput, CreateCategoryInput } from "@gql-prisma-api/modules/blog/dto/index.js";
 import { requireAuth } from "@gql-prisma-api/utils/errors.js";
 
 export const Post = {

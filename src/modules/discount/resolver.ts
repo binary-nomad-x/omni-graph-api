@@ -1,7 +1,7 @@
 import { requireAuth } from "@gql-prisma-api/utils/errors.js";
 import type { Context } from "@gql-prisma-api/types/context.js";
 import type { Discount as DiscountModel } from "@prisma/client";
-import type { CreateDiscountInput, UpdateDiscountInput } from "@gql-prisma-api/modules/discount/inputs.js";
+import type { CreateDiscountInput, UpdateDiscountInput } from "@gql-prisma-api/modules/discount/dto/index.js";
 
 export const Discount = {
   product: (parent: DiscountModel, _args: unknown, ctx: Context) => ctx.services.discount.resolveDiscountProduct(parent.productId),

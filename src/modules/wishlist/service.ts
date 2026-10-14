@@ -1,5 +1,5 @@
 import type { PrismaClient } from "@prisma/client";
-import type { CreateWishlistInput, AddToWishlistInput } from "@gql-prisma-api/modules/wishlist/inputs.js";
+import type { CreateWishlistInput, AddToWishlistInput } from "@gql-prisma-api/modules/wishlist/dto/index.js";
 
 export class WishlistService {
   constructor(private readonly core: PrismaClient) {}

@@ -1,6 +1,6 @@
 import type { Context } from "@gql-prisma-api/types/context.js";
 import type { Wishlist as WishlistModel, WishlistItem as WishlistItemModel } from "@prisma/client";
-import type { CreateWishlistInput, AddToWishlistInput } from "@gql-prisma-api/modules/wishlist/inputs.js";
+import type { CreateWishlistInput, AddToWishlistInput } from "@gql-prisma-api/modules/wishlist/dto/index.js";
 import { requireAuth } from "@gql-prisma-api/utils/errors.js";
 
 export const Wishlist = {

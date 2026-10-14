@@ -1,5 +1,5 @@
 import type { Product, PrismaClient } from "@prisma/client";
-import type { AddToCartInput, UpdateCartItemInput } from "@gql-prisma-api/modules/cart/inputs.js";
+import type { AddToCartInput, UpdateCartItemInput } from "@gql-prisma-api/modules/cart/dto/index.js";
 
 export class CartService {
   constructor(private readonly core: PrismaClient) {}

@@ -1,5 +1,5 @@
 import type { Prisma } from "@prisma/client";
-import type { CreateDiscountInput, UpdateDiscountInput } from "@gql-prisma-api/modules/discount/inputs.js";
+import type { CreateDiscountInput, UpdateDiscountInput } from "@gql-prisma-api/modules/discount/dto/index.js";
 
 export function clean<T extends Record<string, unknown>>(obj: T): T {
   const result = { ...obj };

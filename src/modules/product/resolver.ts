@@ -1,7 +1,7 @@
 import { requireAuth } from "@gql-prisma-api/utils/errors.js";
 import type { Context } from "@gql-prisma-api/types/context.js";
 import type { Product as ProductModel } from "@prisma/client";
-import type { CreateProductInput, UpdateProductInput, ProductFilterInput } from "@gql-prisma-api/modules/product/inputs.js";
+import type { CreateProductInput, UpdateProductInput, ProductFilterInput } from "@gql-prisma-api/modules/product/dto/index.js";
 
 export const Product = {
   seller: (parent: ProductModel, _args: unknown, ctx: Context) => ctx.services.product.resolveProductSeller(parent.sellerId),

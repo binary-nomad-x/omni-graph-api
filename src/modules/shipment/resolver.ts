@@ -1,6 +1,6 @@
 import type { Context } from "@gql-prisma-api/types/context.js";
 import type { Shipment as ShipmentModel } from "@prisma/client";
-import type { CreateShipmentInput } from "@gql-prisma-api/modules/shipment/inputs.js";
+import type { CreateShipmentInput } from "@gql-prisma-api/modules/shipment/dto/index.js";
 import { requireAuth } from "@gql-prisma-api/utils/errors.js";
 
 export const Shipment = {

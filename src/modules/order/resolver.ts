@@ -1,6 +1,6 @@
 import type { Context } from "@gql-prisma-api/types/context.js";
 import type { Order as OrderModel, OrderItem as OrderItemModel } from "@prisma/client";
-import type { PlaceOrderInput, OrderFilterInput } from "@gql-prisma-api/modules/order/inputs.js";
+import type { PlaceOrderInput, OrderFilterInput } from "@gql-prisma-api/modules/order/dto/index.js";
 import { requireAuth } from "@gql-prisma-api/utils/errors.js";
 
 export const Order = {

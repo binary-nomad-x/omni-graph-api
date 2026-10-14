@@ -1,5 +1,5 @@
 import type { Prisma, PrismaClient } from "@prisma/client";
-import type { CreateProductInput, UpdateProductInput, ProductFilterInput } from "@gql-prisma-api/modules/product/inputs.js";
+import type { CreateProductInput, UpdateProductInput, ProductFilterInput } from "@gql-prisma-api/modules/product/dto/index.js";
 import { requireOwner } from "@gql-prisma-api/utils/errors.js";
 import { clean } from "@gql-prisma-api/lib/core.js";
 
