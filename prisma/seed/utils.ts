@@ -1,7 +1,8 @@
 import type { PrismaClient } from "@prisma/client";
+import { logger } from "../../src/utils/logger.js";
 
 export async function resetDatabase(prisma: PrismaClient): Promise<void> {
-  console.log("Resetting database...");
+  logger.info("Resetting database...");
   await prisma.$transaction([
     prisma.novuVariable.deleteMany(),
     prisma.novuVariableGroup.deleteMany(),
@@ -45,5 +46,5 @@ export async function resetDatabase(prisma: PrismaClient): Promise<void> {
 
 export function printElapsed(start: number): void {
   const elapsed = ((Date.now() - start) / 1000).toFixed(1);
-  console.log(`Seeding complete in ${elapsed}s`);
+  logger.info(`Seeding complete in ${elapsed}s`);
 }

@@ -1,4 +1,5 @@
 import { faker } from "@faker-js/faker";
+import { logger } from "../../src/utils/logger.js";
 import bcrypt from "bcryptjs";
 import type { SeedContext, SeedCounts, UserSeed } from "./types.js";
 import { userData } from "../data/users.js";
@@ -81,9 +82,9 @@ export async function seedUsers(ctx: SeedContext, counts: SeedCounts, count: num
   const userIds = users.map((u) => u.id);
 
   // Print only one account per role
-  console.log("\n========================================");
-  console.log(" Test Accounts");
-  console.log("========================================");
+  logger.info("\n========================================");
+  logger.info(" Test Accounts");
+  logger.info("========================================");
 
   const shownRoles = new Set<string>();
 
@@ -92,10 +93,10 @@ export async function seedUsers(ctx: SeedContext, counts: SeedCounts, count: num
 
     shownRoles.add(user.role);
 
-    console.log(`${user.role.padEnd(10)} | ${user.email.padEnd(28)} | ${password}`);
+    logger.info(`${user.role.padEnd(10)} | ${user.email.padEnd(28)} | ${password}`);
   }
 
-  console.log("========================================\n");
+  logger.info("========================================\n");
 
   return userIds;
 }

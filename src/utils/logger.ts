@@ -46,6 +46,7 @@ function getMinLevel(): LogLevel {
 
 function getEnvironment(): string {
   return process.env.LOG_CHANNEL_NAME
+    || process.env.NODE_ENV
     || (process.env.NODE_ENV === "production"
       ? "production"
       : "local");

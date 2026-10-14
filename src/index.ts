@@ -128,7 +128,7 @@ await server.start();
 httpServer.listen(PORT, () => {
   const url = `http://localhost:${PORT}/graphql`;
   logger.info("Server started", { url });
-  console.log(`\n  GraphQL endpoint: ${url}\n`);
+  logger.info("GraphQL endpoint ready", { url });
 
   startWeatherCron();
 });
