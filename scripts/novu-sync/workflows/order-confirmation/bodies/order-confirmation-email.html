@@ -1,1 +1,19 @@
-<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#f7f7f7; padding:24px 0;"><tr><td align="center"><table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:600px; background:#ffffff; border-radius:8px;"><tr><td style="padding:32px;"><h1 style="margin:0 0 16px; font-size:24px; line-height:32px; color:#111111;">Order confirmed</h1><p style="margin:0 0 16px; font-size:16px; line-height:24px;">Thanks, {{ subscriber.firstName }}. We’ve received your order {{ payload.orderNumber }}.</p><p style="margin:0 0 24px; font-size:16px; line-height:24px;"><strong>Total:</strong> {{ payload.currency }} {{ payload.orderTotal }}</p><p style="margin:0 0 24px;"><a href="{{ payload.actionUrl }}" style="display:inline-block; background:#111111; color:#ffffff; text-decoration:none; padding:12px 20px; border-radius:6px; font-weight:600;">View order</a></p><p style="margin:0; font-size:14px; line-height:20px; color:#666666;">If you need to review the details later, use the button above to open your order page.</p></td></tr></table></td></tr></table>
+<html>
+<body style="margin:0; padding:0; background:#f7f7f7; font-family:Arial, Helvetica, sans-serif; color:#222222;">
+<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#f7f7f7; padding:24px 0;">
+  <tr>
+    <td align="center">
+      <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:600px; background:#ffffff; border-radius:8px;">
+        <tr>
+          <td style="padding:32px;"><h1 style="margin:0 0 16px; font-size:24px; line-height:32px; color:#111111;">Order confirmed</h1>
+            <p style="margin:0 0 16px; font-size:16px; line-height:24px;">Thanks, {{ subscriber.firstName }}. We’ve received your order {{ payload.orderNumber }}.</p>
+            <p style="margin:0 0 24px; font-size:16px; line-height:24px;"><strong>Total:</strong> {{ payload.currency }} {{ payload.orderTotal }}</p>
+            <p style="margin:0 0 24px;"><a href="{{ payload.actionUrl }}" style="display:inline-block; background:#111111; color:#ffffff; text-decoration:none; padding:12px 20px; border-radius:6px; font-weight:600;">View order</a></p>
+            <p style="margin:0; font-size:14px; line-height:20px; color:#666666;">If you need to review the details later, use the button above to open your order page.</p></td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>
+</body>
+</html>
