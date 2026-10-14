@@ -1,5 +1,5 @@
 import type { PrismaClient } from "@prisma/client";
-import type { CreateReviewInput } from "@gql-prisma-api/modules/review/inputs.js";
+import type { CreateReviewInput } from "@gql-prisma-api/modules/review/dto/index.js";
 import { requireOwner } from "@gql-prisma-api/utils/errors.js";
 import { triggerNovuWorkflow } from "@gql-prisma-api/utils/novu.js";
 

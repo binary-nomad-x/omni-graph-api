@@ -5,7 +5,7 @@ import type {
   CreateCommentInput,
   CreateCategoryInput,
   PostFilterInput,
-} from "@gql-prisma-api/modules/blog/inputs.js";
+} from "@gql-prisma-api/modules/blog/dto/index.js";
 import { requireOwner } from "@gql-prisma-api/utils/errors.js";
 import { triggerNovuWorkflow } from "@gql-prisma-api/utils/novu.js";
 import { logger } from "@gql-prisma-api/utils/logger.js";

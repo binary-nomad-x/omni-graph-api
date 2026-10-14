@@ -37,7 +37,7 @@ A **production-ready GraphQL API** built with **Apollo Server 5**, **Prisma 7**,
 ## 🎯 What This Project Teaches You
 
 | Domain           | Skills You'll Practice                                                                                                |
-| ---------------- | --------------------------------------------------------------------------------------------------------------------- |
+|------------------|-----------------------------------------------------------------------------------------------------------------------|
 | **GraphQL**      | Schema-first design, `@auth` directive, federation-ready layout, N+1 detection, DataLoader, query complexity analysis |
 | **Prisma 7**     | Driver adapters, transactions, `$queryRaw`, batching with `findMany`+`include`, N+1 elimination, soft deletes         |
 | **PostgreSQL**   | Composite indexes, partial indexes, GIN for full-text, `EXPLAIN ANALYZE`, materialized views, partitioning            |
@@ -54,7 +54,7 @@ A **production-ready GraphQL API** built with **Apollo Server 5**, **Prisma 7**,
 ### Core Design Decisions
 
 | Decision                         | Rationale                                                                                |
-| -------------------------------- | ---------------------------------------------------------------------------------------- |
+|----------------------------------|------------------------------------------------------------------------------------------|
 | **Schema-first GraphQL**         | SDL in `.graphql` files per domain, merged at runtime. Enables parallel work per domain. |
 | **`@auth` directive**            | Declarative auth on queries/mutations. JWT from `Authorization` header.                  |
 | **Thin resolvers, fat services** | Business logic isolated from transport. Easier to test and reuse.                        |
@@ -133,7 +133,7 @@ cp .env.example .env
 ```
 
 | Variable              | Description                                             | Required    |
-| --------------------- | ------------------------------------------------------- | ----------- |
+|-----------------------|---------------------------------------------------------|-------------|
 | `DATABASE_URL`        | PostgreSQL connection string                            | ✅ Yes      |
 | `REDIS_URL`           | Redis connection string (e.g. `redis://localhost:6379`) | ✅ Yes      |
 | `PORT`                | Server port (default: `4000`)                           | ❌ No       |
@@ -175,15 +175,15 @@ npm run dev
 
 ```graphql
 mutation {
-  login(email: "admin@test.com", password: "password123") {
-    token
-    user {
-      id
-      email
-      name
-      role
+    login(email: "admin@test.com", password: "password123") {
+        token
+        user {
+            id
+            email
+            name
+            role
+        }
     }
-  }
 }
 ```
 
@@ -192,7 +192,7 @@ mutation {
 ## 👥 Test Accounts
 
 | Email                | Role          | Password      |
-| -------------------- | ------------- | ------------- |
+|----------------------|---------------|---------------|
 | `admin@test.com`     | **ADMIN**     | `password123` |
 | `admin2@test.com`    | **ADMIN**     | `password123` |
 | `moderator@test.com` | **MODERATOR** | `password123` |
@@ -205,10 +205,10 @@ mutation {
 ## 📜 Scripts
 
 | Command                | Description                                         |
-| ---------------------- | --------------------------------------------------- |
+|------------------------|-----------------------------------------------------|
 | `npm run dev`          | 🔥 Start dev server with hot-reload                 |
 | `npm run build`        | 📦 Compile TypeScript to `dist/`                    |
-| `npm run start`        | ▶️ Run compiled server                              |
+| `npm run start`        | ▶️ Run compiled server                               |
 | `npm run generate`     | 🔄 Regenerate Prisma client                         |
 | `npm run migrate:dev`  | 🗄️ Create / apply Prisma migrations                 |
 | `npm run db:reset`     | 🔄 Drop and re-apply all migrations                 |
@@ -226,7 +226,7 @@ mutation {
 ## 🌱 Seed Data Breakdown
 
 | Table             | Records  | Table           | Records  |
-| ----------------- | -------- | --------------- | -------- |
+|-------------------|----------|-----------------|----------|
 | Users             | 65       | Profiles        | 65       |
 | Categories        | 15       | Tags            | 10       |
 | Posts             | 130      | Comments        | ~500     |
@@ -262,7 +262,7 @@ A **built-in Novu Workflow Management** module for notification template design,
 ### GraphQL Endpoints
 
 | Query / Mutation                                 | Description                      |
-| ------------------------------------------------ | -------------------------------- |
+|--------------------------------------------------|----------------------------------|
 | `novuWorkflows`                                  | 📋 List all workflow metadata    |
 | `novuWorkflow(id)`                               | 🔍 Get single workflow           |
 | `createNovuWorkflow`                             | ✨ Create workflow metadata      |
@@ -291,7 +291,9 @@ A **built-in Novu Workflow Management** module for notification template design,
 **Auth Header:**
 
 ```json
-{ "Authorization": "Bearer <jwt-token>" }
+{
+  "Authorization": "Bearer <jwt-token>"
+}
 ```
 
 📖 See [`schema.graphql`](./schema.graphql) for the full API reference — **~100+ queries/mutations** across all domains.
@@ -305,7 +307,7 @@ This section is the **heart of the project's purpose**. Each item is a real, hig
 ### Phase 1: Performance & Data Correctness
 
 | Area                 | What to Learn                                          | What to Build                                                          |
-| -------------------- | ------------------------------------------------------ | ---------------------------------------------------------------------- |
+|----------------------|--------------------------------------------------------|------------------------------------------------------------------------|
 | **N+1 Queries**      | How GraphQL field resolution explodes into N+1 DB hits | Add **DataLoader** for `post.author`, `order.items`, `product.reviews` |
 | **Indexing**         | Composite vs. partial vs. covering indexes             | Add `EXPLAIN ANALYZE` benchmarks; create missing indexes on hot paths  |
 | **Full-Text Search** | PostgreSQL `tsvector` + GIN indexes                    | Add `searchPosts(query)` and `searchProducts(query)` using `tsvector`  |
@@ -315,7 +317,7 @@ This section is the **heart of the project's purpose**. Each item is a real, hig
 ### Phase 2: Caching & Background Work
 
 | Area                   | What to Learn                             | What to Build                                                        |
-| ---------------------- | ----------------------------------------- | -------------------------------------------------------------------- |
+|------------------------|-------------------------------------------|----------------------------------------------------------------------|
 | **Cache-Aside**        | Read-through, write-through, TTL strategy | Cache `novuWorkflows`, `categories`, `topProducts` in Redis          |
 | **Cache Invalidation** | Keys, tags, stampede prevention           | Use Redis key-versioning + `pipeline` batching                       |
 | **BullMQ Basics**      | Queues, workers, retries, backoff         | Move email + notification sends to BullMQ workers                    |
@@ -326,7 +328,7 @@ This section is the **heart of the project's purpose**. Each item is a real, hig
 ### Phase 3: Scale & Resilience
 
 | Area                   | What to Learn                                      | What to Build                                                            |
-| ---------------------- | -------------------------------------------------- | ------------------------------------------------------------------------ |
+|------------------------|----------------------------------------------------|--------------------------------------------------------------------------|
 | **Connection Pooling** | `pg.Pool`, PgBouncer, transaction vs. session mode | Tune pool size; add PgBouncer in front of Postgres                       |
 | **Read Replicas**      | Routing reads vs. writes                           | Add `prisma-readonly` client for analytics queries                       |
 | **Rate Limiting**      | Token bucket vs. sliding window                    | Add Redis-backed rate limiting per user/IP                               |
@@ -338,7 +340,7 @@ This section is the **heart of the project's purpose**. Each item is a real, hig
 ### Phase 4: Observability & Operations
 
 | Area                    | What to Learn                                | What to Build                                                                     |
-| ----------------------- | -------------------------------------------- | --------------------------------------------------------------------------------- |
+|-------------------------|----------------------------------------------|-----------------------------------------------------------------------------------|
 | **Structured Logging**  | JSON logs, correlation IDs                   | Replace `console.log` with Pino + request IDs                                     |
 | **Distributed Tracing** | Spans across HTTP → GraphQL → Prisma → Redis | Add OpenTelemetry instrumentation                                                 |
 | **Metrics**             | Counters, histograms, gauges                 | Expose `/metrics` (Prometheus format): query latency, cache hit rate, queue depth |
@@ -349,7 +351,7 @@ This section is the **heart of the project's purpose**. Each item is a real, hig
 ### Phase 5: Database Engineering Deep Dive
 
 | Area                         | What to Learn                             | What to Build                                               |
-| ---------------------------- | ----------------------------------------- | ----------------------------------------------------------- |
+|------------------------------|-------------------------------------------|-------------------------------------------------------------|
 | **Partitioning**             | Range vs. list vs. hash                   | Partition `PostViews`, `Messages`, `Notifications` by month |
 | **Materialized Views**       | Refresh strategy, `CONCURRENTLY`          | Materialize `daily_sales`, `top_products_30d`               |
 | **Soft Deletes at Scale**    | Partial indexes, retention policies       | Add `deleted_at` partial indexes; cron to purge old rows    |
@@ -362,7 +364,7 @@ This section is the **heart of the project's purpose**. Each item is a real, hig
 ### Phase 6: Testing & Quality
 
 | Area                  | What to Learn                             | What to Build                                                                          |
-| --------------------- | ----------------------------------------- | -------------------------------------------------------------------------------------- |
+|-----------------------|-------------------------------------------|----------------------------------------------------------------------------------------|
 | **Unit Tests**        | Services in isolation (mock Prisma)       | Add **Vitest** + service coverage > 80%                                                |
 | **Integration Tests** | Real DB, real Redis, ephemeral containers | Add **Testcontainers** + resolver integration tests                                    |
 | **Contract Tests**    | GraphQL schema compatibility              | Add schema-diff checks in CI                                                           |
@@ -373,7 +375,7 @@ This section is the **heart of the project's purpose**. Each item is a real, hig
 ### Phase 7: Security & Multi-Tenancy
 
 | Area                   | What to Learn                        | What to Build                                     |
-| ---------------------- | ------------------------------------ | ------------------------------------------------- |
+|------------------------|--------------------------------------|---------------------------------------------------|
 | **Input Validation**   | Never trust the client               | Add **Zod** schemas in every `inputs.ts`          |
 | **Auth Hardening**     | Refresh tokens, rotation, revocation | Add refresh token flow + `jti` blacklist in Redis |
 | **Secrets Management** | No secrets in `.env` in prod         | Integrate AWS Secrets Manager / Vault             |
@@ -384,7 +386,7 @@ This section is the **heart of the project's purpose**. Each item is a real, hig
 ### Phase 8: DevOps & Delivery
 
 | Area                       | What to Learn                | What to Build                                             |
-| -------------------------- | ---------------------------- | --------------------------------------------------------- |
+|----------------------------|------------------------------|-----------------------------------------------------------|
 | **Dockerization**          | One-command setup            | Add `Dockerfile` (multi-stage) + `docker-compose.yml`     |
 | **CI/CD**                  | Automated tests + migrations | Add GitHub Actions: lint → test → `prisma migrate deploy` |
 | **Blue/Green Deploy**      | Zero-downtime releases       | Practice deploying without dropping requests              |
@@ -395,7 +397,7 @@ This section is the **heart of the project's purpose**. Each item is a real, hig
 ### Phase 9: Product & Platform
 
 | Area                | What to Learn                 | What to Build                                  |
-| ------------------- | ----------------------------- | ---------------------------------------------- |
+|---------------------|-------------------------------|------------------------------------------------|
 | **File Uploads**    | Streaming, S3, signed URLs    | Add `graphql-upload` + S3 presigned URLs       |
 | **Webhooks**        | Inbound + outbound            | Add `/webhooks/stripe`, `/webhooks/novu`       |
 | **Analytics**       | Event tracking at scale       | Add event table + materialized rollups         |
@@ -535,7 +537,7 @@ Here's what I **improved, added, or restructured** — and why:
 ### ✅ Structural Improvements
 
 | Change                                                     | Why                                                                        |
-| ---------------------------------------------------------- | -------------------------------------------------------------------------- |
+|------------------------------------------------------------|----------------------------------------------------------------------------|
 | **Added "What This Project Teaches You"** section          | Turns the README from a spec into a **learning roadmap**.                  |
 | **Added Redis + BullMQ + node-cron to stack**              | Your `package.json` already includes them — README should reflect reality. |
 | **Added `/health`, `/metrics` mentions**                   | Signals operational maturity.                                              |

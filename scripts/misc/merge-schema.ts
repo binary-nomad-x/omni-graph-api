@@ -1,4 +1,6 @@
+import "dotenv/config";
 import { existsSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
+import { logger } from "../../src/utils/logger.js";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -23,13 +25,13 @@ try {
   const orderedFiles = [...(schemaFiles.includes("base.graphql") ? ["base.graphql"] : []), ...schemaFiles.filter((file) => file !== "base.graphql")];
 
   if (!schemaFiles.includes("base.graphql")) {
-    console.warn("⚠️  base.graphql not found. Merging files alphabetically.");
+    logger.warning("⚠️  base.graphql not found. Merging files alphabetically.");
   }
 
   const mergedSchema = orderedFiles
     .map((file) => {
       const filePath = join(schemaDir, file);
-      console.log(`• ${file}`);
+      logger.info(`• ${file}`);
       return readFileSync(filePath, "utf8").trim();
     })
     .filter(Boolean)
@@ -37,15 +39,15 @@ try {
 
   writeFileSync(outputFile, `${mergedSchema}\n`, "utf8");
 
-  console.log(`\n✅ Successfully merged ${orderedFiles.length} schema file(s) into:`);
-  console.log(outputFile);
+  logger.info(`\n✅ Successfully merged ${orderedFiles.length} schema file(s) into:`);
+  logger.info(outputFile);
 } catch (error) {
-  console.error("\n❌ Failed to merge GraphQL schema.");
+  logger.error("\n❌ Failed to merge GraphQL schema.");
 
   if (error instanceof Error) {
-    console.error(error.message);
+    logger.error(error.message);
   } else {
-    console.error(error);
+    logger.error(String(error));
   }
 
   process.exit(1);

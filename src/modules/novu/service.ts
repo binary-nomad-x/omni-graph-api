@@ -3,7 +3,7 @@ import type { Novu } from "@novu/node";
 import { logger } from "@gql-prisma-api/utils/logger.js";
 import { AppError, NotFoundError } from "@gql-prisma-api/utils/errors.js";
 import { clean } from "@gql-prisma-api/lib/core.js";
-import type { VariableType, PayloadValidationError, PayloadValidationResult, NovuWorkflowDef, TriggerResult } from "./types/index.js";
+import type { VariableType, PayloadValidationError, PayloadValidationResult, NovuWorkflowDef, TriggerResult } from "@gql-prisma-api/modules/novu/models/index.js";
 import type {
   CreateVariableGroupInput,
   UpdateVariableGroupInput,
@@ -11,7 +11,7 @@ import type {
   UpdateVariableInput,
   TriggerWorkflowInput,
   CreateNovuSubscriberInput,
-} from "./inputs.js";
+} from "./dto/index.js";
 import { randomUUID } from "node:crypto";
 
 export class NovuService {

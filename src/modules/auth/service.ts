@@ -1,5 +1,5 @@
 import type { PrismaClient } from "@prisma/client";
-import type { CreateUserInput } from "@gql-prisma-api/modules/auth/inputs.js";
+import type { CreateUserInput } from "@gql-prisma-api/modules/auth/dto/index.js";
 import { hashPassword, comparePassword, generateToken } from "@gql-prisma-api/utils/auth.js";
 import { AppError } from "@gql-prisma-api/utils/errors.js";
 import { triggerNovuWorkflow, createNovuSubscriber } from "@gql-prisma-api/utils/novu.js";

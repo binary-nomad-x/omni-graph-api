@@ -1,8 +1,8 @@
 import { existsSync, readdirSync, rmSync } from "node:fs";
-import { join, resolve, basename } from "node:path";
+import { basename, resolve } from "node:path";
 import { config } from "./config.js";
-import { readJson, readText, writeJsonAtomic, writeTextAtomic, ensureDir, rmDirRecursive } from "./file-utils.js";
-import type { WorkflowJson, LayoutJson, WorkflowStepJson } from "./types.js";
+import { ensureDir, readJson, readText, rmDirRecursive, writeJsonAtomic, writeTextAtomic } from "./file-utils.js";
+import type { LayoutJson, WorkflowJson, WorkflowStepJson } from "./types.js";
 import { RunLogger } from "./logger.js";
 
 const SYNC_DIR = resolve(config.root, "scripts", "novu-sync");

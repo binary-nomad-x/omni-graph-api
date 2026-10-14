@@ -1,5 +1,5 @@
 import type { Prisma, PrismaClient } from "@prisma/client";
-import type { PlaceOrderInput, OrderFilterInput } from "@gql-prisma-api/modules/order/inputs.js";
+import type { PlaceOrderInput, OrderFilterInput } from "@gql-prisma-api/modules/order/dto/index.js";
 import { requireOwner } from "@gql-prisma-api/utils/errors.js";
 import { triggerNovuWorkflow } from "@gql-prisma-api/utils/novu.js";
 import { logger } from "@gql-prisma-api/utils/logger.js";

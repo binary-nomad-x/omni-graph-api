@@ -1,5 +1,5 @@
 import type { Context } from "@gql-prisma-api/types/context.js";
-import type { CreateTicketInput, TicketFilterInput, AddTicketReplyInput } from "@gql-prisma-api/modules/support/inputs.js";
+import type { CreateTicketInput, TicketFilterInput, AddTicketReplyInput } from "@gql-prisma-api/modules/support/dto/index.js";
 import {
   resolveSupportTicketUser,
   resolveSupportTicketReplies,

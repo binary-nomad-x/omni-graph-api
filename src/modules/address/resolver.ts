@@ -1,7 +1,7 @@
 import type { Context } from "@gql-prisma-api/types/context.js";
 import type { Address as AddressModel } from "@prisma/client";
 import type { IdArg } from "@gql-prisma-api/types/graphql.js";
-import type { CreateAddressInput, UpdateAddressInput } from "@gql-prisma-api/modules/address/inputs.js";
+import type { CreateAddressInput, UpdateAddressInput } from "@gql-prisma-api/modules/address/dto/index.js";
 import { requireAuth } from "@gql-prisma-api/utils/errors.js";
 
 export const Address = {

@@ -1,4 +1,5 @@
 import "dotenv/config";
+import { logger } from "../../src/utils/logger.js";
 import { PrismaClient } from "@prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 import pg from "pg";
@@ -47,21 +48,21 @@ async function main(): Promise<void> {
 
   if (flag === "--reset" || flag === "-r") {
     await resetDatabase(prisma);
-    console.log("Database reset complete.");
+    logger.info("Database reset complete.");
     return;
   }
 
   if (flag === "--fresh" || flag === "-f") {
     await resetDatabase(prisma);
-    console.log("Database reset complete. Now seeding...\n");
+    logger.info("Database reset complete. Now seeding...\n");
   }
 
-  console.log("Seeding database...\n");
+  logger.info("Seeding database...\n");
   const start = Date.now();
   const counts: SeedCounts = createEmptyCounts();
 
   // Phase 1 — Independent tables
-  console.log("[1/8] Users, Tags, Categories, Novu...");
+  logger.info("[1/8] Users, Tags, Categories, Novu...");
   const [userIds, tagIds, categoryIds] = await Promise.all([
     seedUsers(ctx, counts, USER_COUNT),
     seedTags(ctx, counts),
@@ -70,14 +71,14 @@ async function main(): Promise<void> {
   ]);
 
   // Phase 2 — Content tables (depend on users, tags, categories)
-  console.log("[2/8] Posts, Products...");
+  logger.info("[2/8] Posts, Products...");
   const [postIds, productIds] = await Promise.all([
     seedPosts(ctx, counts, userIds, tagIds, categoryIds, POST_COUNT),
     seedProducts(ctx, counts, userIds, categoryIds, PRODUCT_COUNT),
   ]);
 
   // Phase 3 — Comments, Likes, Follows, Addresses
-  console.log("[3/8] Comments, Likes, Follows, Addresses...");
+  logger.info("[3/8] Comments, Likes, Follows, Addresses...");
   await Promise.all([
     seedComments(ctx, counts, userIds, postIds),
     seedLikes(ctx, counts, userIds, postIds),
@@ -87,7 +88,7 @@ async function main(): Promise<void> {
   ]);
 
   // Phase 4 — Shopping-related (carts, wishlists, reviews)
-  console.log("[4/8] Carts, Wishlists, Reviews...");
+  logger.info("[4/8] Carts, Wishlists, Reviews...");
   await Promise.all([
     seedCarts(ctx, counts, userIds, productIds),
     seedWishlists(ctx, counts, userIds, productIds),
@@ -95,18 +96,18 @@ async function main(): Promise<void> {
   ]);
 
   // Phase 5 — Commerce (coupons, orders, payments, shipments, refunds)
-  console.log("[5/8] Coupons, Orders, Payments, Shipments, Refunds...");
+  logger.info("[5/8] Coupons, Orders, Payments, Shipments, Refunds...");
   const couponIds = await seedCoupons(ctx, counts, userIds);
   const orderIds = await seedOrders(ctx, counts, userIds, productIds, couponIds);
   await Promise.all([seedPayments(ctx, counts, orderIds), seedShipments(ctx, counts, orderIds)]);
   await seedRefunds(ctx, counts, orderIds);
 
   // Phase 6 — Discounts, Notifications, Subscriptions
-  console.log("[6/8] Discounts, Notifications, Subscriptions...");
+  logger.info("[6/8] Discounts, Notifications, Subscriptions...");
   await Promise.all([seedDiscounts(ctx, counts, userIds, productIds), seedNotifications(ctx, counts, userIds), seedSubscriptions(ctx, counts, userIds)]);
 
   // Phase 7 — Saved posts, Post views, Conversations
-  console.log("[7/8] Saved Posts, Post Views, Conversations...");
+  logger.info("[7/8] Saved Posts, Post Views, Conversations...");
   await Promise.all([
     seedSavedPosts(ctx, counts, userIds, postIds),
     seedPostViews(ctx, counts, postIds, userIds),
@@ -114,12 +115,12 @@ async function main(): Promise<void> {
   ]);
 
   // Phase 8 — Invoices, Returns, Support Tickets
-  console.log("[8/8] Invoices, Returns, Support Tickets...");
+  logger.info("[8/8] Invoices, Returns, Support Tickets...");
   await Promise.all([seedInvoices(ctx, counts, orderIds), seedReturns(ctx, counts, userIds, orderIds), seedTickets(ctx, counts, userIds, orderIds)]);
 
   // Summary
   printElapsed(start);
-  console.log(
+  logger.info(
     `Summary: ${counts.users} users, ${counts.products} products, ` +
       `${counts.orders} orders, ${counts.messages} messages, ` +
       `${counts.posts} posts, ${counts.comments} comments, ` +
@@ -130,7 +131,7 @@ async function main(): Promise<void> {
 
 main()
   .catch((e: unknown) => {
-    console.error("Seed failed:", e);
+    logger.error("Seed failed:", e);
     process.exit(1);
   })
   .finally(async () => {

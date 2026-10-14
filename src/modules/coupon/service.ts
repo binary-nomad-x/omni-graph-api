@@ -1,5 +1,5 @@
 import type { Prisma, PrismaClient } from "@prisma/client";
-import type { CreateCouponInput } from "@gql-prisma-api/modules/coupon/inputs.js";
+import type { CreateCouponInput } from "@gql-prisma-api/modules/coupon/dto/index.js";
 import { clean } from "@gql-prisma-api/lib/core.js";
 
 export class CouponService {

@@ -1,5 +1,5 @@
 import type { Prisma, PrismaClient } from "@prisma/client";
-import type { UpdateUserInput, UpdateProfileInput } from "@gql-prisma-api/modules/user/inputs.js";
+import type { UpdateUserInput, UpdateProfileInput } from "@gql-prisma-api/modules/user/dto/index.js";
 import { hashPassword } from "@gql-prisma-api/utils/auth.js";
 import { requireOwner } from "@gql-prisma-api/utils/errors.js";
 import { clean } from "@gql-prisma-api/lib/core.js";

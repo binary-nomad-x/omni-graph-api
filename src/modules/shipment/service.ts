@@ -1,5 +1,5 @@
 import type { PrismaClient } from "@prisma/client";
-import type { CreateShipmentInput } from "@gql-prisma-api/modules/shipment/inputs.js";
+import type { CreateShipmentInput } from "@gql-prisma-api/modules/shipment/dto/index.js";
 import { triggerNovuWorkflow } from "@gql-prisma-api/utils/novu.js";
 
 export class ShipmentService {

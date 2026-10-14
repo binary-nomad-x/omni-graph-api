@@ -143,9 +143,11 @@
       .container {
         padding: 40px 30px;
       }
+
       .header {
         font-size: 24px;
       }
+
       .button {
         width: 100%;
         max-width: 220px;
@@ -155,32 +157,32 @@
   </style>
 </head>
 <body>
-  <div class="container">
-    <div class="header">
-      🎯 Your Subscription Just Got Smarter
-    </div>
-
-    <p>Dear <strong>{{payload.subscription.plan.name}}</strong>,</p>
-    <p>We’re thrilled to keep you on track with your subscription. Here’s your updated summary for seamless continuity.</p>
-
-    <div class="details">
-      <strong>✨ Subscription Summary</strong><br><br>
-      Plan Name: <b>{{payload.subscription.plan.name}}</b><br>
-      Next Billing Date: <b>{{payload.subscription.nextBillingDate}}</b><br>
-      Upcoming Charge: <b class="highlight">${{payload.billing.nextChargeDisplayAmount}}</b><br>
-      Payment Method: <b>{{payload.payment.method.type}}</b><br><br>
-      <span class="badge">Your trial ends in {{payload.notification.daysUntilAction}} days</span>
-    </div>
-
-    <p>Your trial period ends on <strong>{{payload.subscription.trialEnd}}</strong>. You have <strong>{{payload.notification.daysUntilAction}}</strong> days left to enjoy premium features before your next billing cycle.</p>
-
-    <a href="#" class="button">👉 Manage Your Subscription</a>
-
-    <div class="footer">
-      <p>Thank you for trusting us with your journey.</p>
-      <p>— The <strong style="color: #3498db;">Customer Success Team</strong></p>
-      <p style="margin-top: 10px; font-size: 12px;">Need help? <a href="#" style="color: #3498db; text-decoration: underline;">Contact Support</a></p>
-    </div>
+<div class="container">
+  <div class="header">
+    🎯 Your Subscription Just Got Smarter
   </div>
+
+  <p>Dear <strong>{{payload.subscription.plan.name}}</strong>,</p>
+  <p>We’re thrilled to keep you on track with your subscription. Here’s your updated summary for seamless continuity.</p>
+
+  <div class="details">
+    <strong>✨ Subscription Summary</strong><br><br>
+    Plan Name: <b>{{payload.subscription.plan.name}}</b><br>
+    Next Billing Date: <b>{{payload.subscription.nextBillingDate}}</b><br>
+    Upcoming Charge: <b class="highlight">${{payload.billing.nextChargeDisplayAmount}}</b><br>
+    Payment Method: <b>{{payload.payment.method.type}}</b><br><br>
+    <span class="badge">Your trial ends in {{payload.notification.daysUntilAction}} days</span>
+  </div>
+
+  <p>Your trial period ends on <strong>{{payload.subscription.trialEnd}}</strong>. You have <strong>{{payload.notification.daysUntilAction}}</strong> days left to enjoy premium features before your next billing cycle.</p>
+
+  <a href="#" class="button">👉 Manage Your Subscription</a>
+
+  <div class="footer">
+    <p>Thank you for trusting us with your journey.</p>
+    <p>— The <strong style="color: #3498db;">Customer Success Team</strong></p>
+    <p style="margin-top: 10px; font-size: 12px;">Need help? <a href="#" style="color: #3498db; text-decoration: underline;">Contact Support</a></p>
+  </div>
+</div>
 </body>
 </html>

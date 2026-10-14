@@ -1,6 +1,6 @@
 import type { Context } from "@gql-prisma-api/types/context.js";
 import type { Subscription as SubscriptionModel } from "@prisma/client";
-import type { SubscriptionPlan } from "@gql-prisma-api/modules/subscription/types/index.js";
+import type { SubscriptionPlan } from "@gql-prisma-api/modules/subscription/models/index.js";
 import type { TrialEndingInput } from "@gql-prisma-api/modules/subscription/service.js";
 import { requireAuth } from "@gql-prisma-api/utils/errors.js";
 

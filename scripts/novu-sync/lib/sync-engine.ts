@@ -1,16 +1,22 @@
-import { existsSync, mkdirSync } from "node:fs";
+import { existsSync } from "node:fs";
 import { resolve } from "node:path";
-import { NovuApiClient, ApiError } from "./api-client.js";
+import { ApiError, NovuApiClient } from "./api-client.js";
 import { RunLogger } from "./logger.js";
-import { hashWorkflow, hashLayout } from "./hashing.js";
+import { hashLayout, hashWorkflow } from "./hashing.js";
 import {
-  discoverWorkflowDirs, loadAllWorkflows, loadWorkflow, saveWorkflow, removeWorkflowDir,
-  discoverLayoutFiles, loadAllLayouts, loadLayout, saveLayout, removeLayoutFile,
-  getWorkflowsDir, getLayoutsDir,
+  getLayoutsDir,
+  getWorkflowsDir,
+  loadAllLayouts,
+  loadAllWorkflows,
+  loadLayout,
+  loadWorkflow,
+  removeLayoutFile,
+  removeWorkflowDir,
+  saveLayout,
+  saveWorkflow,
 } from "./discover.js";
-import { ensureDir, writeJsonAtomic, readJson, readText, writeTextAtomic, rmDirRecursive } from "./file-utils.js";
-import type { WorkflowJson, LayoutJson, WorkflowStepJson, SyncResult, SyncSummary } from "./types.js";
-import { config } from "./config.js";
+import { ensureDir, writeJsonAtomic, writeTextAtomic } from "./file-utils.js";
+import type { LayoutJson, SyncResult, SyncSummary, WorkflowJson } from "./types.js";
 
 // ─── API response normalizers ─────────────────────────────────
 
@@ -328,11 +334,19 @@ export class SyncEngine {
           const ok = saveLayout(layout, this.log);
           if (ok) {
             summary.created++;
-            summary.results.push({ workflowId: layout.layoutId, action: "create", detail: `Pulled layout ${layout.slug}` });
+            summary.results.push({
+              workflowId: layout.layoutId,
+              action: "create",
+              detail: `Pulled layout ${layout.slug}`
+            });
             if (opts.dryRun) this.log.info(`[DRY-RUN] Would pull layout: ${layout.slug}`);
           } else {
             summary.errors++;
-            summary.results.push({ workflowId: layout.layoutId, action: "error", detail: `Failed to save layout ${layout.slug}` });
+            summary.results.push({
+              workflowId: layout.layoutId,
+              action: "error",
+              detail: `Failed to save layout ${layout.slug}`
+            });
           }
         }
       } catch (err) {
@@ -662,11 +676,21 @@ export class SyncEngine {
   private aggregate(summary: SyncSummary, result: SyncResult): void {
     summary.results.push(result);
     switch (result.action) {
-      case "create": summary.created++; break;
-      case "update": summary.updated++; break;
-      case "delete": summary.deleted++; break;
-      case "skip": summary.skipped++; break;
-      case "error": summary.errors++; break;
+      case "create":
+        summary.created++;
+        break;
+      case "update":
+        summary.updated++;
+        break;
+      case "delete":
+        summary.deleted++;
+        break;
+      case "skip":
+        summary.skipped++;
+        break;
+      case "error":
+        summary.errors++;
+        break;
     }
   }
 

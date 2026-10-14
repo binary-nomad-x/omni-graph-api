@@ -1,4 +1,4 @@
-import { appendFileSync, existsSync, mkdirSync, copyFileSync, rmSync } from "node:fs";
+import { appendFileSync, copyFileSync, existsSync, mkdirSync, rmSync } from "node:fs";
 import { resolve } from "node:path";
 import { config } from "./config.js";
 
@@ -9,15 +9,18 @@ function ensureDir(dir: string): void {
   if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
 }
 
-function timestamp(): string {
-  return new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19);
+function getEnvironment(): string {
+  return process.env.LOG_CHANNEL_NAME
+    || config.nodeEnv
+    || process.env.NODE_ENV
+    || (process.env.NODE_ENV === "production" ? "production" : "local");
 }
 
-function now(): string {
-  return new Date().toISOString();
+function nowLaravel(): string {
+  return new Date().toISOString().replace("T", " ").replace(/\.\d{3}Z$/, "");
 }
 
-const runId = timestamp();
+const runId = new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19);
 
 export class RunLogger {
   private readonly logFile: string;
@@ -31,15 +34,26 @@ export class RunLogger {
     this.info("Run started", { runId });
   }
 
+  private levelName(level: string): string {
+    const map: Record<string, string> = {
+      debug: "DEBUG",
+      info: "INFO",
+      warn: "WARNING",
+      warning: "WARNING",
+      error: "ERROR",
+      critical: "CRITICAL",
+    };
+    return map[level.toLowerCase()] ?? level.toUpperCase();
+  }
+
   private write(level: string, message: string, data?: unknown): void {
-    const entry = { time: now(), level, message, data };
     this.entries.push({ level, message, data });
-    const line = JSON.stringify(entry) + "\n";
+    const timestamp = nowLaravel();
+    const meta = data ? ` ${JSON.stringify(data)}` : "";
+    const line = `[${timestamp}] ${getEnvironment()}.${this.levelName(level)}: ${message}${meta}\n`;
     appendFileSync(this.logFile, line, "utf-8");
-    // update latest.log by copy (atomic-ish on most OS)
     try { rmSync(this.latestLink, { force: true }); } catch { /* ignore */ }
     try { copyFileSync(this.logFile, this.latestLink); } catch { /* ignore */ }
-    // also print to stderr
     this.print(level, message, data);
   }
 
@@ -50,7 +64,9 @@ export class RunLogger {
   }
 
   info(message: string, data?: unknown): void { this.write("info", message, data); }
+
   warn(message: string, data?: unknown): void { this.write("warn", message, data); }
+
   error(message: string, data?: unknown): void { this.write("error", message, data); }
 
   summary(): { logFile: string; entries: number } {

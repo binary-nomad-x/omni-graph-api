@@ -7,7 +7,7 @@ import type {
   UpdateVariableInput,
   TriggerWorkflowInput,
   CreateNovuSubscriberInput,
-} from "@gql-prisma-api/modules/novu/inputs.js";
+} from "@gql-prisma-api/modules/novu/dto/index.js";
 
 export const NovuWorkflow = {};
 

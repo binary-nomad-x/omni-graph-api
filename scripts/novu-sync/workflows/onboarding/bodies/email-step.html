@@ -1,0 +1,120 @@
+<table
+    role="presentation"
+    width="100%"
+    cellpadding="0"
+    cellspacing="0"
+    border="0"
+    style="background-color:#ffffff;font-family:Arial,Helvetica,sans-serif;color:#0f172a;"
+>
+  <tr>
+    <td align="center" style="padding:32px 20px;">
+      <table
+          role="presentation"
+          width="100%"
+          cellpadding="0"
+          cellspacing="0"
+          border="0"
+          style="max-width:520px;margin:0 auto;"
+      >
+        <tr>
+          <td style="padding:0 0 28px;">
+            <div style="width:48px;height:48px;background-color:#dcfce7;border-radius:14px;text-align:center;line-height:48px;font-size:24px;color:#15803d;">
+              ✦
+            </div>
+          </td>
+        </tr>
+
+        <tr>
+          <td style="padding:0 0 12px;font-size:13px;line-height:20px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:#15803d;">
+            Welcome aboard
+          </td>
+        </tr>
+
+        <tr>
+          <td style="padding:0 0 12px;font-size:30px;line-height:38px;font-weight:700;letter-spacing:-0.8px;color:#0f172a;">
+            Welcome, {{payload.patientName}}!
+          </td>
+        </tr>
+
+        <tr>
+          <td style="padding:0 0 24px;font-size:15px;line-height:25px;color:#475569;">
+            We're glad you're here. Your account is almost ready. Complete your onboarding to get started and explore everything {{payload.companyName}} has to offer.
+          </td>
+        </tr>
+
+        <tr>
+          <td style="padding:20px 22px;background-color:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;">
+            <div style="padding:0 0 16px;font-size:15px;line-height:22px;font-weight:700;color:#0f172a;">
+              Get started in 3 simple steps
+            </div>
+
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+              <tr>
+                <td width="28" valign="top" style="padding:0 0 12px;font-size:17px;line-height:22px;color:#16a34a;">
+                  ✓
+                </td>
+                <td valign="top" style="padding:0 0 12px;font-size:14px;line-height:22px;color:#334155;">
+                  Set up your account
+                </td>
+              </tr>
+
+              <tr>
+                <td width="28" valign="top" style="padding:0 0 12px;font-size:17px;line-height:22px;color:#16a34a;">
+                  ✓
+                </td>
+                <td valign="top" style="padding:0 0 12px;font-size:14px;line-height:22px;color:#334155;">
+                  Complete your profile
+                </td>
+              </tr>
+
+              <tr>
+                <td width="28" valign="top" style="font-size:17px;line-height:22px;color:#16a34a;">
+                  ✓
+                </td>
+                <td valign="top" style="font-size:14px;line-height:22px;color:#334155;">
+                  Explore your dashboard
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+
+        <tr>
+          <td align="left" style="padding:28px 0 20px;">
+            <a
+                href="{{payload.onboardingLink}}"
+                target="_blank"
+                style="display:inline-block;padding:14px 22px;background-color:#15803d;border-radius:8px;color:#ffffff;font-size:14px;line-height:20px;font-weight:700;text-decoration:none;"
+            >
+              Complete your onboarding &rarr;
+            </a>
+          </td>
+        </tr>
+
+        <tr>
+          <td style="padding:0 0 24px;font-size:13px;line-height:21px;color:#64748b;">
+            Need help getting started?
+            <a
+                href="{{payload.supportLink}}"
+                target="_blank"
+                style="color:#15803d;font-weight:600;text-decoration:underline;"
+            >Contact our support team</a>.
+          </td>
+        </tr>
+
+        <tr>
+          <td style="padding:16px 0 0;border-top:1px solid #e2e8f0;font-size:11px;line-height:18px;color:#94a3b8;">
+            You're receiving this email because you signed up for {{payload.companyName}}.
+            <br>
+            <a href="{{payload.unsubscribeLink}}" target="_blank" style="color:#64748b;text-decoration:underline;">
+              Unsubscribe
+            </a>
+            <span style="padding:0 5px;">·</span>
+            &copy; {{payload.year}} {{payload.companyName}}
+          </td>
+        </tr>
+      </table>
+    </td>
+    
+  </tr>
+</table>

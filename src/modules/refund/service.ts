@@ -1,5 +1,5 @@
 import type { Prisma, PrismaClient } from "@prisma/client";
-import type { CreateRefundInput, RefundFilterInput } from "@gql-prisma-api/modules/refund/inputs.js";
+import type { CreateRefundInput, RefundFilterInput } from "@gql-prisma-api/modules/refund/dto/index.js";
 import { requireOwner } from "@gql-prisma-api/utils/errors.js";
 import { triggerNovuWorkflow } from "@gql-prisma-api/utils/novu.js";
 
