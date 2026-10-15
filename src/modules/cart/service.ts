@@ -17,7 +17,10 @@ export class CartService {
       where: { cartId },
       include: { product: true },
     });
-    return items.reduce((sum: number, i: { product: Product; quantity: number }) => sum + i.product.price * i.quantity, 0);
+    return items.reduce((sum: number, i: {
+      product: Product;
+      quantity: number
+    }) => sum + i.product.price * i.quantity, 0);
   }
 
   resolveCartItemCount(cartId: string) {
