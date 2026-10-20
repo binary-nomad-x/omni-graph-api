@@ -1,0 +1,45 @@
+name: Ultimate 9B Optimized Config
+version: 2.1.0
+schema: v1
+
+models:
+  # 1. Primary Model (Sab se powerful - Chat, Edit, aur Apply sab ishi par chalenge)
+  - name: Qwen 3.5 9B
+    provider: ollama
+    model: qwen3.5:9b
+    roles:
+      - chat
+      - edit
+      - apply
+
+  # 2. Secondary Fast Coding Model
+  - name: Qwen 2.5 Coder 7B
+    provider: ollama
+    model: qwen2.5-coder:7b
+    roles:
+      - chat
+
+  # 3. Fast Multipurpose Model
+  - name: LFM 2.5 8B
+    provider: ollama
+    model: lfm2.5:8b
+    roles:
+      - chat
+
+  # 4. Ultra-Fast Lightweight Model
+  - name: Qwen 3.5 4B (Fast)
+    provider: ollama
+    model: qwen3.5:4b-q4_K_M
+    roles:
+      - chat
+
+  # Auto-discovery
+  - name: Autodetect
+    provider: ollama
+    model: AUTODETECT
+
+# Autocomplete ke liye bhi ab 9B model set kar diya hai taake suggestions chal paden
+tabAutocompleteModel:
+  title: Qwen 3.5 9B
+  provider: ollama
+  model: qwen3.5:9b
