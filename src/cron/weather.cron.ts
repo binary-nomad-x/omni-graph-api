@@ -25,7 +25,7 @@ export function startWeatherCron(): void {
   }
 
   // Run every minute
-  task = cron.schedule("* * * * *", async () => {
+  task = cron.schedule("*/20 * * * *", async () => {
     totalRuns++;
     const startedAt = Date.now();
 

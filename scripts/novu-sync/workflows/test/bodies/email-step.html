@@ -1,0 +1,186 @@
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="width:100%;max-width:680px;margin:0 auto;font-family:sans-serif">
+  <tr>
+    <td style="padding:0 0 28px 0">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td style="padding:0 0 10px 0">
+            <span style="display:inline-block;font-size:11px;line-height:14px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:#00346f">Appointment Notification</span>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <h1 style="margin:0;font-size:26px;line-height:32px;color:#191c1d;font-weight:700;letter-spacing:-0.02em">Appointment Missed</h1>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+
+  <tr>
+    <td style="padding:0 0 24px 0">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td style="padding:0 0 8px 0">
+            <p style="margin:0;font-size:15px;line-height:22px;font-weight:600;color:#191c1d">Hello {{ payload.provider.name }},</p>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <p style="margin:0;font-size:15px;line-height:24px;color:#5f6b7a">Your patient <strong style="color:#191c1d">{{ payload.patient.name }}</strong>'s <strong style="color:#191c1d">{{ payload.appointment.specialty }}</strong> appointment on <strong style="color:#191c1d">{{ payload.appointment.date.formatted }}</strong> at <strong style="color:#191c1d">{{ payload.appointment.time.formatted }}</strong> has not been checked in.</p>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:10px 0 0 0">
+            <p style="margin:0;font-size:14px;line-height:22px;color:#5f6b7a">The appointment has been automatically marked as <strong style="color:#991b1b">No Show</strong>. If the patient arrived, please update the status from your portal.</p>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+
+  <tr>
+    <td style="padding:0 0 24px 0">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="width:100%;background:#ffffff;border:1px solid #e1e7ef;border-radius:12px">
+        <tr>
+          <td style="padding:18px 20px;border-bottom:1px solid #eef2f6">
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+              <tr>
+                <td valign="middle">
+                  <p style="margin:0;font-size:12px;line-height:18px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#191c1d">Appointment Details</p>
+                  <p style="margin:5px 0 0;font-size:13px;line-height:18px;font-weight:600;color:#5f6b7a">#appt-{{ payload.appointment.code }}</p>
+                </td>
+                <td align="right" valign="middle">
+                  <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="background:#fef2f2;border:1px solid #fecaca;border-radius:20px">
+                    <tr>
+                      <td style="padding:6px 11px;font-size:10px;line-height:12px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#991b1b">No-Show</td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+
+        <tr>
+          <td style="padding:20px">
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="width:100%">
+              <tr>
+                <td class="cc-col" width="50%" valign="top" style="width:50%;padding:0 8px 16px 0">
+                  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="width:100%;background:#f7f9fc;border:1px solid #e1e7ef;border-radius:8px">
+                    <tr>
+                      <td style="padding:14px 15px">
+                        <p style="margin:0 0 5px;font-size:10px;line-height:14px;font-weight:700;letter-spacing:0.09em;text-transform:uppercase;color:#5f6b7a">Patient</p>
+                        <p style="margin:0;font-size:15px;line-height:22px;font-weight:700;color:#00346f">{{ payload.patient.name }}</p>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+                <td class="cc-col" width="50%" valign="top" style="width:50%;padding:0 0 16px 8px">
+                  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="width:100%;background:#f7f9fc;border:1px solid #e1e7ef;border-radius:8px">
+                    <tr>
+                      <td style="padding:14px 15px">
+                        <p style="margin:0 0 5px;font-size:10px;line-height:14px;font-weight:700;letter-spacing:0.09em;text-transform:uppercase;color:#5f6b7a">Provider</p>
+                        <p style="margin:0;font-size:15px;line-height:22px;font-weight:700;color:#00346f">{{ payload.provider.name }}</p>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+
+              <tr>
+                <td class="cc-col" width="50%" valign="top" style="width:50%;padding:0 8px 16px 0">
+                  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="width:100%;background:#f7f9fc;border:1px solid #e1e7ef;border-radius:8px">
+                    <tr>
+                      <td style="padding:14px 15px">
+                        <p style="margin:0 0 5px;font-size:10px;line-height:14px;font-weight:700;letter-spacing:0.09em;text-transform:uppercase;color:#5f6b7a">Date</p>
+                        <p style="margin:0;font-size:15px;line-height:22px;font-weight:700;color:#191c1d">{{ payload.appointment.date.formatted }}</p>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+                <td class="cc-col" width="50%" valign="top" style="width:50%;padding:0 0 16px 8px">
+                  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="width:100%;background:#f7f9fc;border:1px solid #e1e7ef;border-radius:8px">
+                    <tr>
+                      <td style="padding:14px 15px">
+                        <p style="margin:0 0 5px;font-size:10px;line-height:14px;font-weight:700;letter-spacing:0.09em;text-transform:uppercase;color:#5f6b7a">Time</p>
+                        <p style="margin:0;font-size:15px;line-height:22px;font-weight:700;color:#191c1d">{{ payload.appointment.time.formatted }}</p>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+
+              <tr>
+                <td class="cc-col" width="50%" valign="top" style="width:50%;padding:0 8px 16px 0">
+                  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="width:100%;background:#f7f9fc;border:1px solid #e1e7ef;border-radius:8px">
+                    <tr>
+                      <td style="padding:14px 15px">
+                        <p style="margin:0 0 5px;font-size:10px;line-height:14px;font-weight:700;letter-spacing:0.09em;text-transform:uppercase;color:#5f6b7a">Specialty</p>
+                        <p style="margin:0;font-size:15px;line-height:22px;font-weight:700;color:#191c1d">{{ payload.appointment.specialty }}</p>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+                <td class="cc-col" width="50%" valign="top" style="width:50%;padding:0 0 16px 8px">
+                  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="width:100%;background:#f7f9fc;border:1px solid #e1e7ef;border-radius:8px">
+                    <tr>
+                      <td style="padding:14px 15px">
+                        <p style="margin:0 0 5px;font-size:10px;line-height:14px;font-weight:700;letter-spacing:0.09em;text-transform:uppercase;color:#5f6b7a">Case</p>
+                        <p style="margin:0;font-size:15px;line-height:22px;font-weight:700;color:#00346f">{{ payload.legalCase.name }}</p>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+
+              <tr>
+                <td colspan="2" valign="top" style="padding:0">
+                  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="width:100%;background:#f7f9fc;border:1px solid #e1e7ef;border-radius:8px">
+                    <tr>
+                      <td style="padding:14px 15px">
+                        <p style="margin:0 0 5px;font-size:10px;line-height:14px;font-weight:700;letter-spacing:0.09em;text-transform:uppercase;color:#5f6b7a">Appointment Location</p>
+                        <p style="margin:0;font-size:15px;line-height:22px;font-weight:700;color:#191c1d">{{ payload.appointment.location.formatted }}</p>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+
+        <tr>
+          <td style="padding:0 20px 20px">
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="width:100%;background:#f7f9fc;border:1px solid #e1e7ef;border-left:4px solid #00346f;border-radius:8px">
+              <tr>
+                <td style="padding:15px 16px">
+                  <p style="margin:0 0 5px;font-size:11px;line-height:15px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#00346f">What You Can Do</p>
+                  <p style="margin:0;font-size:14px;line-height:21px;color:#5f6b7a">If the patient actually arrived, open your portal to update their status. Otherwise, follow up to reschedule.</p>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+
+  <!-- PORTAL BUTTON (only action available) -->
+  <tr>
+    <td style="padding:0 0 20px 0" align="center">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td style="background:#00346f;border-radius:8px">
+            <a href="{{ payload.actions.portal }}" style="display:inline-block;padding:14px 32px;font-size:14px;line-height:20px;font-weight:700;color:#ffffff;text-decoration:none;letter-spacing:0.02em">Open in Portal</a>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+
+  <tr>
+    <td style="padding:0;text-align:center">
+      <p style="margin:0;font-size:12px;line-height:18px;color:#8a9099">This is an automated appointment notification.</p>
+    </td>
+  </tr>
+</table>

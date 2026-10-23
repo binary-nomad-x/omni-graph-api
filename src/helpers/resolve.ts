@@ -13,3 +13,5 @@ export function resolveTicketReplyTicket(parent: Record<string, unknown>) {
 export function resolveTicketReplyUser(parent: Record<string, unknown>) {
   return parent.user;
 }
+
+
