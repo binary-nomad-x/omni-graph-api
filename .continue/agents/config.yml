@@ -1,9 +1,9 @@
-name: Ultimate 9B Optimized Config
-version: 2.1.0
+name: Ultimate 9B Speed Optimized Config
+version: 2.2.0
 schema: v1
 
 models:
-  # 1. Primary Model (Sab se powerful - Chat, Edit, aur Apply sab ishi par chalenge)
+  # 1. Primary High-Performance Model (Chat, Edit, & Apply)
   - name: Qwen 3.5 9B
     provider: ollama
     model: qwen3.5:9b
@@ -26,20 +26,13 @@ models:
     roles:
       - chat
 
-  # 4. Ultra-Fast Lightweight Model
-  - name: Qwen 3.5 4B (Fast)
-    provider: ollama
-    model: qwen3.5:4b-q4_K_M
-    roles:
-      - chat
-
-  # Auto-discovery
+  # Auto-discovery for new models
   - name: Autodetect
     provider: ollama
     model: AUTODETECT
 
-# Autocomplete ke liye bhi ab 9B model set kar diya hai taake suggestions chal paden
+# Speed Improve Karne ke Liye: Autocomplete par chota aur fast model set kiya hai
 tabAutocompleteModel:
-  title: Qwen 3.5 9B
+  title: Qwen 3.5 4B (Fast)
   provider: ollama
-  model: qwen3.5:9b
+  model: qwen3.5:4b-q4_K_M

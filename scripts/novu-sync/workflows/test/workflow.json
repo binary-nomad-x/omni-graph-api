@@ -1,0 +1,2101 @@
+{
+  "name": "Test Test Test Test Test Test",
+  "workflowId": "test",
+  "slug": "test",
+  "description": "only for local testing",
+  "tags": [
+    "test",
+    "testing",
+    "local",
+    "local-only",
+    "secondary",
+    "common payload shape"
+  ],
+  "active": true,
+  "validatePayload": true,
+  "payloadSchema": {
+    "type": "object",
+    "properties": {
+      "patient": {
+        "type": "object",
+        "required": [],
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "firstName": {
+            "type": "string"
+          },
+          "lastName": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "phone": {
+            "type": "string"
+          },
+          "dateOfBirth": {
+            "type": "string"
+          },
+          "primaryAddressCity": {
+            "type": "string"
+          },
+          "primaryAddressStateOrProvince": {
+            "type": "string"
+          }
+        }
+      },
+      "provider": {
+        "type": "object",
+        "required": [],
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "firstName": {
+            "type": "string"
+          },
+          "lastName": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "phone": {
+            "type": "string"
+          }
+        }
+      },
+      "attorneys": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "name": {
+              "type": "string"
+            },
+            "email": {
+              "type": "string"
+            },
+            "phone": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "id",
+            "name",
+            "email",
+            "phone"
+          ]
+        }
+      },
+      "managers": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "name": {
+              "type": "string"
+            },
+            "email": {
+              "type": "string"
+            },
+            "phone": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "id",
+            "name",
+            "email",
+            "phone"
+          ]
+        }
+      },
+      "firm": {
+        "type": "object",
+        "required": [],
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          }
+        }
+      },
+      "legalCase": {
+        "type": "object",
+        "required": [],
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "fileNumber": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          }
+        }
+      },
+      "appointment": {
+        "type": "object",
+        "required": [
+          "date",
+          "time",
+          "zone",
+          "location"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string"
+          },
+          "specialty": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string"
+          },
+          "iso": {
+            "type": "string"
+          },
+          "date": {
+            "type": "object",
+            "required": [],
+            "additionalProperties": false,
+            "properties": {
+              "formatted": {
+                "type": "string"
+              },
+              "iso": {
+                "type": "string"
+              },
+              "mmddyyyy": {
+                "type": "string"
+              }
+            }
+          },
+          "time": {
+            "type": "object",
+            "required": [],
+            "additionalProperties": false,
+            "properties": {
+              "formatted": {
+                "type": "string"
+              },
+              "iso": {
+                "type": "string"
+              }
+            }
+          },
+          "zone": {
+            "type": "object",
+            "required": [],
+            "additionalProperties": false,
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "iso": {
+                "type": "string"
+              },
+              "country": {
+                "type": "string"
+              }
+            }
+          },
+          "location": {
+            "type": "object",
+            "required": [],
+            "additionalProperties": false,
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "formatted": {
+                "type": "string"
+              },
+              "line1": {
+                "type": "string"
+              },
+              "line2": {
+                "type": "string"
+              },
+              "city": {
+                "type": "string"
+              },
+              "state": {
+                "type": "string"
+              },
+              "postalCode": {
+                "type": "string"
+              },
+              "country": {
+                "type": "string"
+              },
+              "phone": {
+                "type": "string"
+              },
+              "latitude": {
+                "type": "number"
+              },
+              "longitude": {
+                "type": "number"
+              }
+            }
+          }
+        }
+      },
+      "channels": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      },
+      "role": {
+        "type": "string"
+      },
+      "actions": {
+        "type": "object",
+        "required": [
+          "checkIn"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "portal": {
+            "type": "string"
+          },
+          "checkIn": {
+            "type": "object",
+            "required": [],
+            "additionalProperties": false,
+            "properties": {
+              "url": {
+                "type": "string"
+              }
+            }
+          },
+          "reschedule": {
+            "type": "object",
+            "properties": {
+              "url": {
+                "type": "string"
+              }
+            }
+          },
+          "confirm": {
+            "type": "object",
+            "properties": {
+              "url": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
+    "required": [
+      "patient",
+      "provider",
+      "attorneys",
+      "managers",
+      "firm",
+      "legalCase",
+      "appointment",
+      "channels",
+      "role",
+      "actions"
+    ]
+  },
+  "preferences": {
+    "user": null,
+    "default": {
+      "all": {
+        "enabled": true,
+        "readOnly": false
+      },
+      "channels": {
+        "email": {
+          "enabled": true
+        },
+        "sms": {
+          "enabled": true
+        },
+        "in_app": {
+          "enabled": true
+        },
+        "chat": {
+          "enabled": true
+        },
+        "push": {
+          "enabled": true
+        },
+        "tool": {
+          "enabled": true
+        }
+      }
+    }
+  },
+  "origin": "novu-cloud",
+  "steps": [
+    {
+      "stepId": "email-step",
+      "name": "Provider",
+      "type": "email",
+      "bodyFile": "email-step.html",
+      "controlValues": {
+        "editorType": "html",
+        "disableOutputSanitization": false,
+        "skip": {
+          "and": [
+            {
+              "==": [
+                {
+                  "var": "payload.role"
+                },
+                "provider"
+              ]
+            },
+            {
+              "containsAny": [
+                {
+                  "var": "payload.channels"
+                },
+                [
+                  "email",
+                  "mail"
+                ]
+              ]
+            }
+          ]
+        },
+        "subject": "Your patient {{payload.patient.name}} has missed the appointment",
+        "layoutId": "default-layout",
+        "from": {
+          "email": "",
+          "name": ""
+        },
+        "useProviderDefaults": false,
+        "replyTo": "",
+        "preheader": ""
+      },
+      "variables": {
+        "type": "object",
+        "properties": {
+          "workflow": {
+            "type": "object",
+            "description": "Schema representing the workflow entity",
+            "properties": {
+              "workflowId": {
+                "type": "string",
+                "description": "Workflow identifier"
+              },
+              "name": {
+                "type": "string",
+                "description": "Name of the workflow"
+              },
+              "description": {
+                "type": "string",
+                "description": "Description of the workflow"
+              },
+              "tags": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "severity": {
+                "type": "string",
+                "enum": [
+                  "high",
+                  "medium",
+                  "low",
+                  "none"
+                ],
+                "enumName": "SeverityLevelEnum",
+                "description": "Severity of the workflow"
+              }
+            },
+            "required": [
+              "workflowId",
+              "name"
+            ]
+          },
+          "subscriber": {
+            "type": "object",
+            "description": "Schema representing the subscriber entity",
+            "properties": {
+              "firstName": {
+                "type": "string",
+                "description": "Subscriber's first name"
+              },
+              "lastName": {
+                "type": "string",
+                "description": "Subscriber's last name"
+              },
+              "email": {
+                "type": "string",
+                "description": "Subscriber's email address"
+              },
+              "phone": {
+                "type": "string",
+                "description": "Subscriber's phone number (optional)"
+              },
+              "avatar": {
+                "type": "string",
+                "description": "URL to the subscriber's avatar image (optional)"
+              },
+              "locale": {
+                "type": "string",
+                "description": "Locale for the subscriber (optional)"
+              },
+              "timezone": {
+                "type": "string",
+                "description": "Timezone for the subscriber (optional)"
+              },
+              "subscriberId": {
+                "type": "string",
+                "description": "Unique identifier for the subscriber"
+              },
+              "isOnline": {
+                "type": "boolean",
+                "description": "Indicates if the subscriber is online (optional)"
+              },
+              "lastOnlineAt": {
+                "type": "string",
+                "format": "date-time",
+                "description": "The last time the subscriber was online (optional)"
+              },
+              "data": {
+                "type": "object",
+                "properties": {},
+                "required": [],
+                "additionalProperties": true
+              }
+            },
+            "required": [
+              "subscriberId"
+            ],
+            "additionalProperties": false
+          },
+          "actor": {
+            "type": "object",
+            "description": "Schema representing the actor entity sent during workflow trigger",
+            "properties": {
+              "firstName": {
+                "type": "string",
+                "description": "Subscriber's first name"
+              },
+              "lastName": {
+                "type": "string",
+                "description": "Subscriber's last name"
+              },
+              "email": {
+                "type": "string",
+                "description": "Subscriber's email address"
+              },
+              "phone": {
+                "type": "string",
+                "description": "Subscriber's phone number (optional)"
+              },
+              "avatar": {
+                "type": "string",
+                "description": "URL to the subscriber's avatar image (optional)"
+              },
+              "locale": {
+                "type": "string",
+                "description": "Locale for the subscriber (optional)"
+              },
+              "timezone": {
+                "type": "string",
+                "description": "Timezone for the subscriber (optional)"
+              },
+              "subscriberId": {
+                "type": "string",
+                "description": "Unique identifier for the subscriber"
+              },
+              "isOnline": {
+                "type": "boolean",
+                "description": "Indicates if the subscriber is online (optional)"
+              },
+              "lastOnlineAt": {
+                "type": "string",
+                "format": "date-time",
+                "description": "The last time the subscriber was online (optional)"
+              },
+              "data": {
+                "type": "object",
+                "properties": {},
+                "required": [],
+                "additionalProperties": true
+              }
+            },
+            "required": [
+              "subscriberId"
+            ],
+            "additionalProperties": false
+          },
+          "steps": {
+            "type": "object",
+            "properties": {},
+            "required": [],
+            "additionalProperties": false,
+            "description": "Previous Steps Results"
+          },
+          "payload": {
+            "type": "object",
+            "properties": {
+              "patient": {
+                "type": "object",
+                "required": [],
+                "additionalProperties": false,
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "firstName": {
+                    "type": "string"
+                  },
+                  "lastName": {
+                    "type": "string"
+                  },
+                  "email": {
+                    "type": "string"
+                  },
+                  "phone": {
+                    "type": "string"
+                  },
+                  "dateOfBirth": {
+                    "type": "string"
+                  },
+                  "primaryAddressCity": {
+                    "type": "string"
+                  },
+                  "primaryAddressStateOrProvince": {
+                    "type": "string"
+                  }
+                }
+              },
+              "provider": {
+                "type": "object",
+                "required": [],
+                "additionalProperties": false,
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "firstName": {
+                    "type": "string"
+                  },
+                  "lastName": {
+                    "type": "string"
+                  },
+                  "email": {
+                    "type": "string"
+                  },
+                  "phone": {
+                    "type": "string"
+                  }
+                }
+              },
+              "attorneys": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "name": {
+                      "type": "string"
+                    },
+                    "email": {
+                      "type": "string"
+                    },
+                    "phone": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "name",
+                    "email",
+                    "phone"
+                  ]
+                }
+              },
+              "managers": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "name": {
+                      "type": "string"
+                    },
+                    "email": {
+                      "type": "string"
+                    },
+                    "phone": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "name",
+                    "email",
+                    "phone"
+                  ]
+                }
+              },
+              "firm": {
+                "type": "object",
+                "required": [],
+                "additionalProperties": false,
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  }
+                }
+              },
+              "legalCase": {
+                "type": "object",
+                "required": [],
+                "additionalProperties": false,
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "fileNumber": {
+                    "type": "string"
+                  },
+                  "type": {
+                    "type": "string"
+                  },
+                  "status": {
+                    "type": "string"
+                  }
+                }
+              },
+              "appointment": {
+                "type": "object",
+                "required": [
+                  "date",
+                  "time",
+                  "zone",
+                  "location"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "code": {
+                    "type": "string"
+                  },
+                  "specialty": {
+                    "type": "string"
+                  },
+                  "kind": {
+                    "type": "string"
+                  },
+                  "iso": {
+                    "type": "string"
+                  },
+                  "date": {
+                    "type": "object",
+                    "required": [],
+                    "additionalProperties": false,
+                    "properties": {
+                      "formatted": {
+                        "type": "string"
+                      },
+                      "iso": {
+                        "type": "string"
+                      },
+                      "mmddyyyy": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "time": {
+                    "type": "object",
+                    "required": [],
+                    "additionalProperties": false,
+                    "properties": {
+                      "formatted": {
+                        "type": "string"
+                      },
+                      "iso": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "zone": {
+                    "type": "object",
+                    "required": [],
+                    "additionalProperties": false,
+                    "properties": {
+                      "name": {
+                        "type": "string"
+                      },
+                      "iso": {
+                        "type": "string"
+                      },
+                      "country": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "location": {
+                    "type": "object",
+                    "required": [],
+                    "additionalProperties": false,
+                    "properties": {
+                      "name": {
+                        "type": "string"
+                      },
+                      "formatted": {
+                        "type": "string"
+                      },
+                      "line1": {
+                        "type": "string"
+                      },
+                      "line2": {
+                        "type": "string"
+                      },
+                      "city": {
+                        "type": "string"
+                      },
+                      "state": {
+                        "type": "string"
+                      },
+                      "postalCode": {
+                        "type": "string"
+                      },
+                      "country": {
+                        "type": "string"
+                      },
+                      "phone": {
+                        "type": "string"
+                      },
+                      "latitude": {
+                        "type": "number"
+                      },
+                      "longitude": {
+                        "type": "number"
+                      }
+                    }
+                  }
+                }
+              },
+              "channels": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "role": {
+                "type": "string"
+              },
+              "actions": {
+                "type": "object",
+                "required": [
+                  "checkIn"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "portal": {
+                    "type": "string"
+                  },
+                  "checkIn": {
+                    "type": "object",
+                    "required": [],
+                    "additionalProperties": false,
+                    "properties": {
+                      "url": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "reschedule": {
+                    "type": "object",
+                    "properties": {
+                      "url": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "confirm": {
+                    "type": "object",
+                    "properties": {
+                      "url": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "required": [
+              "patient",
+              "provider",
+              "attorneys",
+              "managers",
+              "firm",
+              "legalCase",
+              "appointment",
+              "channels",
+              "role",
+              "actions"
+            ]
+          },
+          "context": {
+            "type": "object",
+            "description": "Context data passed at trigger time following ContextPayload structure",
+            "properties": {},
+            "required": [],
+            "additionalProperties": {
+              "type": "object",
+              "description": "Context value - can be accessed as string or object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "description": "Context identifier"
+                },
+                "data": {
+                  "type": "object",
+                  "description": "Additional context data",
+                  "properties": {},
+                  "additionalProperties": true
+                }
+              },
+              "required": [],
+              "additionalProperties": false
+            }
+          },
+          "env": {
+            "type": "object",
+            "description": "Environment variables accessible in workflow templates",
+            "properties": {
+              "name": {
+                "type": "string",
+                "description": "Environment variable: name"
+              },
+              "type": {
+                "type": "string",
+                "description": "Environment variable: type"
+              }
+            },
+            "required": [],
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "stepId": "email-step-jsu3v0ep",
+      "name": "Patient",
+      "type": "email",
+      "bodyFile": "email-step-jsu3v0ep.html",
+      "controlValues": {
+        "editorType": "html",
+        "disableOutputSanitization": false,
+        "skip": {
+          "and": [
+            {
+              "==": [
+                {
+                  "var": "payload.role"
+                },
+                "patient"
+              ]
+            },
+            {
+              "containsAny": [
+                {
+                  "var": "payload.channels"
+                },
+                [
+                  "email",
+                  "mail"
+                ]
+              ]
+            }
+          ]
+        },
+        "subject": "For the Patient",
+        "layoutId": "default-layout",
+        "from": {
+          "email": "",
+          "name": ""
+        },
+        "useProviderDefaults": false,
+        "replyTo": "",
+        "preheader": ""
+      },
+      "variables": {
+        "type": "object",
+        "properties": {
+          "workflow": {
+            "type": "object",
+            "description": "Schema representing the workflow entity",
+            "properties": {
+              "workflowId": {
+                "type": "string",
+                "description": "Workflow identifier"
+              },
+              "name": {
+                "type": "string",
+                "description": "Name of the workflow"
+              },
+              "description": {
+                "type": "string",
+                "description": "Description of the workflow"
+              },
+              "tags": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "severity": {
+                "type": "string",
+                "enum": [
+                  "high",
+                  "medium",
+                  "low",
+                  "none"
+                ],
+                "enumName": "SeverityLevelEnum",
+                "description": "Severity of the workflow"
+              }
+            },
+            "required": [
+              "workflowId",
+              "name"
+            ]
+          },
+          "subscriber": {
+            "type": "object",
+            "description": "Schema representing the subscriber entity",
+            "properties": {
+              "firstName": {
+                "type": "string",
+                "description": "Subscriber's first name"
+              },
+              "lastName": {
+                "type": "string",
+                "description": "Subscriber's last name"
+              },
+              "email": {
+                "type": "string",
+                "description": "Subscriber's email address"
+              },
+              "phone": {
+                "type": "string",
+                "description": "Subscriber's phone number (optional)"
+              },
+              "avatar": {
+                "type": "string",
+                "description": "URL to the subscriber's avatar image (optional)"
+              },
+              "locale": {
+                "type": "string",
+                "description": "Locale for the subscriber (optional)"
+              },
+              "timezone": {
+                "type": "string",
+                "description": "Timezone for the subscriber (optional)"
+              },
+              "subscriberId": {
+                "type": "string",
+                "description": "Unique identifier for the subscriber"
+              },
+              "isOnline": {
+                "type": "boolean",
+                "description": "Indicates if the subscriber is online (optional)"
+              },
+              "lastOnlineAt": {
+                "type": "string",
+                "format": "date-time",
+                "description": "The last time the subscriber was online (optional)"
+              },
+              "data": {
+                "type": "object",
+                "properties": {},
+                "required": [],
+                "additionalProperties": true
+              }
+            },
+            "required": [
+              "subscriberId"
+            ],
+            "additionalProperties": false
+          },
+          "actor": {
+            "type": "object",
+            "description": "Schema representing the actor entity sent during workflow trigger",
+            "properties": {
+              "firstName": {
+                "type": "string",
+                "description": "Subscriber's first name"
+              },
+              "lastName": {
+                "type": "string",
+                "description": "Subscriber's last name"
+              },
+              "email": {
+                "type": "string",
+                "description": "Subscriber's email address"
+              },
+              "phone": {
+                "type": "string",
+                "description": "Subscriber's phone number (optional)"
+              },
+              "avatar": {
+                "type": "string",
+                "description": "URL to the subscriber's avatar image (optional)"
+              },
+              "locale": {
+                "type": "string",
+                "description": "Locale for the subscriber (optional)"
+              },
+              "timezone": {
+                "type": "string",
+                "description": "Timezone for the subscriber (optional)"
+              },
+              "subscriberId": {
+                "type": "string",
+                "description": "Unique identifier for the subscriber"
+              },
+              "isOnline": {
+                "type": "boolean",
+                "description": "Indicates if the subscriber is online (optional)"
+              },
+              "lastOnlineAt": {
+                "type": "string",
+                "format": "date-time",
+                "description": "The last time the subscriber was online (optional)"
+              },
+              "data": {
+                "type": "object",
+                "properties": {},
+                "required": [],
+                "additionalProperties": true
+              }
+            },
+            "required": [
+              "subscriberId"
+            ],
+            "additionalProperties": false
+          },
+          "steps": {
+            "type": "object",
+            "properties": {
+              "email-step": {
+                "type": "object",
+                "properties": {},
+                "required": [],
+                "additionalProperties": false
+              }
+            },
+            "required": [],
+            "additionalProperties": false,
+            "description": "Previous Steps Results"
+          },
+          "payload": {
+            "type": "object",
+            "properties": {
+              "patient": {
+                "type": "object",
+                "required": [],
+                "additionalProperties": false,
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "firstName": {
+                    "type": "string"
+                  },
+                  "lastName": {
+                    "type": "string"
+                  },
+                  "email": {
+                    "type": "string"
+                  },
+                  "phone": {
+                    "type": "string"
+                  },
+                  "dateOfBirth": {
+                    "type": "string"
+                  },
+                  "primaryAddressCity": {
+                    "type": "string"
+                  },
+                  "primaryAddressStateOrProvince": {
+                    "type": "string"
+                  }
+                }
+              },
+              "provider": {
+                "type": "object",
+                "required": [],
+                "additionalProperties": false,
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "firstName": {
+                    "type": "string"
+                  },
+                  "lastName": {
+                    "type": "string"
+                  },
+                  "email": {
+                    "type": "string"
+                  },
+                  "phone": {
+                    "type": "string"
+                  }
+                }
+              },
+              "attorneys": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "name": {
+                      "type": "string"
+                    },
+                    "email": {
+                      "type": "string"
+                    },
+                    "phone": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "name",
+                    "email",
+                    "phone"
+                  ]
+                }
+              },
+              "managers": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "name": {
+                      "type": "string"
+                    },
+                    "email": {
+                      "type": "string"
+                    },
+                    "phone": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "name",
+                    "email",
+                    "phone"
+                  ]
+                }
+              },
+              "firm": {
+                "type": "object",
+                "required": [],
+                "additionalProperties": false,
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  }
+                }
+              },
+              "legalCase": {
+                "type": "object",
+                "required": [],
+                "additionalProperties": false,
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "fileNumber": {
+                    "type": "string"
+                  },
+                  "type": {
+                    "type": "string"
+                  },
+                  "status": {
+                    "type": "string"
+                  }
+                }
+              },
+              "appointment": {
+                "type": "object",
+                "required": [
+                  "date",
+                  "time",
+                  "zone",
+                  "location"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "code": {
+                    "type": "string"
+                  },
+                  "specialty": {
+                    "type": "string"
+                  },
+                  "kind": {
+                    "type": "string"
+                  },
+                  "iso": {
+                    "type": "string"
+                  },
+                  "date": {
+                    "type": "object",
+                    "required": [],
+                    "additionalProperties": false,
+                    "properties": {
+                      "formatted": {
+                        "type": "string"
+                      },
+                      "iso": {
+                        "type": "string"
+                      },
+                      "mmddyyyy": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "time": {
+                    "type": "object",
+                    "required": [],
+                    "additionalProperties": false,
+                    "properties": {
+                      "formatted": {
+                        "type": "string"
+                      },
+                      "iso": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "zone": {
+                    "type": "object",
+                    "required": [],
+                    "additionalProperties": false,
+                    "properties": {
+                      "name": {
+                        "type": "string"
+                      },
+                      "iso": {
+                        "type": "string"
+                      },
+                      "country": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "location": {
+                    "type": "object",
+                    "required": [],
+                    "additionalProperties": false,
+                    "properties": {
+                      "name": {
+                        "type": "string"
+                      },
+                      "formatted": {
+                        "type": "string"
+                      },
+                      "line1": {
+                        "type": "string"
+                      },
+                      "line2": {
+                        "type": "string"
+                      },
+                      "city": {
+                        "type": "string"
+                      },
+                      "state": {
+                        "type": "string"
+                      },
+                      "postalCode": {
+                        "type": "string"
+                      },
+                      "country": {
+                        "type": "string"
+                      },
+                      "phone": {
+                        "type": "string"
+                      },
+                      "latitude": {
+                        "type": "number"
+                      },
+                      "longitude": {
+                        "type": "number"
+                      }
+                    }
+                  }
+                }
+              },
+              "channels": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "role": {
+                "type": "string"
+              },
+              "actions": {
+                "type": "object",
+                "required": [
+                  "checkIn"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "portal": {
+                    "type": "string"
+                  },
+                  "checkIn": {
+                    "type": "object",
+                    "required": [],
+                    "additionalProperties": false,
+                    "properties": {
+                      "url": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "reschedule": {
+                    "type": "object",
+                    "properties": {
+                      "url": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "confirm": {
+                    "type": "object",
+                    "properties": {
+                      "url": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "required": [
+              "patient",
+              "provider",
+              "attorneys",
+              "managers",
+              "firm",
+              "legalCase",
+              "appointment",
+              "channels",
+              "role",
+              "actions"
+            ]
+          },
+          "context": {
+            "type": "object",
+            "description": "Context data passed at trigger time following ContextPayload structure",
+            "properties": {},
+            "required": [],
+            "additionalProperties": {
+              "type": "object",
+              "description": "Context value - can be accessed as string or object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "description": "Context identifier"
+                },
+                "data": {
+                  "type": "object",
+                  "description": "Additional context data",
+                  "properties": {},
+                  "additionalProperties": true
+                }
+              },
+              "required": [],
+              "additionalProperties": false
+            }
+          },
+          "env": {
+            "type": "object",
+            "description": "Environment variables accessible in workflow templates",
+            "properties": {
+              "name": {
+                "type": "string",
+                "description": "Environment variable: name"
+              },
+              "type": {
+                "type": "string",
+                "description": "Environment variable: type"
+              }
+            },
+            "required": [],
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "stepId": "email-step-yf6aw7pz",
+      "name": "Attorney",
+      "type": "email",
+      "bodyFile": "email-step-yf6aw7pz.html",
+      "controlValues": {
+        "editorType": "html",
+        "disableOutputSanitization": false,
+        "subject": "Your client {{payload.patient.name}} has missed the appointment",
+        "layoutId": "default-layout",
+        "from": {
+          "email": "",
+          "name": ""
+        },
+        "useProviderDefaults": false,
+        "replyTo": "",
+        "preheader": "",
+        "skip": {
+          "and": [
+            {
+              "==": [
+                {
+                  "var": "payload.role"
+                },
+                "attorney"
+              ]
+            },
+            {
+              "containsAny": [
+                {
+                  "var": "payload.channels"
+                },
+                [
+                  "email",
+                  "mail"
+                ]
+              ]
+            }
+          ]
+        }
+      },
+      "variables": {
+        "type": "object",
+        "properties": {
+          "workflow": {
+            "type": "object",
+            "description": "Schema representing the workflow entity",
+            "properties": {
+              "workflowId": {
+                "type": "string",
+                "description": "Workflow identifier"
+              },
+              "name": {
+                "type": "string",
+                "description": "Name of the workflow"
+              },
+              "description": {
+                "type": "string",
+                "description": "Description of the workflow"
+              },
+              "tags": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "severity": {
+                "type": "string",
+                "enum": [
+                  "high",
+                  "medium",
+                  "low",
+                  "none"
+                ],
+                "enumName": "SeverityLevelEnum",
+                "description": "Severity of the workflow"
+              }
+            },
+            "required": [
+              "workflowId",
+              "name"
+            ]
+          },
+          "subscriber": {
+            "type": "object",
+            "description": "Schema representing the subscriber entity",
+            "properties": {
+              "firstName": {
+                "type": "string",
+                "description": "Subscriber's first name"
+              },
+              "lastName": {
+                "type": "string",
+                "description": "Subscriber's last name"
+              },
+              "email": {
+                "type": "string",
+                "description": "Subscriber's email address"
+              },
+              "phone": {
+                "type": "string",
+                "description": "Subscriber's phone number (optional)"
+              },
+              "avatar": {
+                "type": "string",
+                "description": "URL to the subscriber's avatar image (optional)"
+              },
+              "locale": {
+                "type": "string",
+                "description": "Locale for the subscriber (optional)"
+              },
+              "timezone": {
+                "type": "string",
+                "description": "Timezone for the subscriber (optional)"
+              },
+              "subscriberId": {
+                "type": "string",
+                "description": "Unique identifier for the subscriber"
+              },
+              "isOnline": {
+                "type": "boolean",
+                "description": "Indicates if the subscriber is online (optional)"
+              },
+              "lastOnlineAt": {
+                "type": "string",
+                "format": "date-time",
+                "description": "The last time the subscriber was online (optional)"
+              },
+              "data": {
+                "type": "object",
+                "properties": {},
+                "required": [],
+                "additionalProperties": true
+              }
+            },
+            "required": [
+              "subscriberId"
+            ],
+            "additionalProperties": false
+          },
+          "actor": {
+            "type": "object",
+            "description": "Schema representing the actor entity sent during workflow trigger",
+            "properties": {
+              "firstName": {
+                "type": "string",
+                "description": "Subscriber's first name"
+              },
+              "lastName": {
+                "type": "string",
+                "description": "Subscriber's last name"
+              },
+              "email": {
+                "type": "string",
+                "description": "Subscriber's email address"
+              },
+              "phone": {
+                "type": "string",
+                "description": "Subscriber's phone number (optional)"
+              },
+              "avatar": {
+                "type": "string",
+                "description": "URL to the subscriber's avatar image (optional)"
+              },
+              "locale": {
+                "type": "string",
+                "description": "Locale for the subscriber (optional)"
+              },
+              "timezone": {
+                "type": "string",
+                "description": "Timezone for the subscriber (optional)"
+              },
+              "subscriberId": {
+                "type": "string",
+                "description": "Unique identifier for the subscriber"
+              },
+              "isOnline": {
+                "type": "boolean",
+                "description": "Indicates if the subscriber is online (optional)"
+              },
+              "lastOnlineAt": {
+                "type": "string",
+                "format": "date-time",
+                "description": "The last time the subscriber was online (optional)"
+              },
+              "data": {
+                "type": "object",
+                "properties": {},
+                "required": [],
+                "additionalProperties": true
+              }
+            },
+            "required": [
+              "subscriberId"
+            ],
+            "additionalProperties": false
+          },
+          "steps": {
+            "type": "object",
+            "properties": {
+              "email-step": {
+                "type": "object",
+                "properties": {},
+                "required": [],
+                "additionalProperties": false
+              },
+              "email-step-jsu3v0ep": {
+                "type": "object",
+                "properties": {},
+                "required": [],
+                "additionalProperties": false
+              }
+            },
+            "required": [],
+            "additionalProperties": false,
+            "description": "Previous Steps Results"
+          },
+          "payload": {
+            "type": "object",
+            "properties": {
+              "patient": {
+                "type": "object",
+                "required": [],
+                "additionalProperties": false,
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "firstName": {
+                    "type": "string"
+                  },
+                  "lastName": {
+                    "type": "string"
+                  },
+                  "email": {
+                    "type": "string"
+                  },
+                  "phone": {
+                    "type": "string"
+                  },
+                  "dateOfBirth": {
+                    "type": "string"
+                  },
+                  "primaryAddressCity": {
+                    "type": "string"
+                  },
+                  "primaryAddressStateOrProvince": {
+                    "type": "string"
+                  }
+                }
+              },
+              "provider": {
+                "type": "object",
+                "required": [],
+                "additionalProperties": false,
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "firstName": {
+                    "type": "string"
+                  },
+                  "lastName": {
+                    "type": "string"
+                  },
+                  "email": {
+                    "type": "string"
+                  },
+                  "phone": {
+                    "type": "string"
+                  }
+                }
+              },
+              "attorneys": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "name": {
+                      "type": "string"
+                    },
+                    "email": {
+                      "type": "string"
+                    },
+                    "phone": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "name",
+                    "email",
+                    "phone"
+                  ]
+                }
+              },
+              "managers": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "name": {
+                      "type": "string"
+                    },
+                    "email": {
+                      "type": "string"
+                    },
+                    "phone": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "name",
+                    "email",
+                    "phone"
+                  ]
+                }
+              },
+              "firm": {
+                "type": "object",
+                "required": [],
+                "additionalProperties": false,
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  }
+                }
+              },
+              "legalCase": {
+                "type": "object",
+                "required": [],
+                "additionalProperties": false,
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "fileNumber": {
+                    "type": "string"
+                  },
+                  "type": {
+                    "type": "string"
+                  },
+                  "status": {
+                    "type": "string"
+                  }
+                }
+              },
+              "appointment": {
+                "type": "object",
+                "required": [
+                  "date",
+                  "time",
+                  "zone",
+                  "location"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "code": {
+                    "type": "string"
+                  },
+                  "specialty": {
+                    "type": "string"
+                  },
+                  "kind": {
+                    "type": "string"
+                  },
+                  "iso": {
+                    "type": "string"
+                  },
+                  "date": {
+                    "type": "object",
+                    "required": [],
+                    "additionalProperties": false,
+                    "properties": {
+                      "formatted": {
+                        "type": "string"
+                      },
+                      "iso": {
+                        "type": "string"
+                      },
+                      "mmddyyyy": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "time": {
+                    "type": "object",
+                    "required": [],
+                    "additionalProperties": false,
+                    "properties": {
+                      "formatted": {
+                        "type": "string"
+                      },
+                      "iso": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "zone": {
+                    "type": "object",
+                    "required": [],
+                    "additionalProperties": false,
+                    "properties": {
+                      "name": {
+                        "type": "string"
+                      },
+                      "iso": {
+                        "type": "string"
+                      },
+                      "country": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "location": {
+                    "type": "object",
+                    "required": [],
+                    "additionalProperties": false,
+                    "properties": {
+                      "name": {
+                        "type": "string"
+                      },
+                      "formatted": {
+                        "type": "string"
+                      },
+                      "line1": {
+                        "type": "string"
+                      },
+                      "line2": {
+                        "type": "string"
+                      },
+                      "city": {
+                        "type": "string"
+                      },
+                      "state": {
+                        "type": "string"
+                      },
+                      "postalCode": {
+                        "type": "string"
+                      },
+                      "country": {
+                        "type": "string"
+                      },
+                      "phone": {
+                        "type": "string"
+                      },
+                      "latitude": {
+                        "type": "number"
+                      },
+                      "longitude": {
+                        "type": "number"
+                      }
+                    }
+                  }
+                }
+              },
+              "channels": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "role": {
+                "type": "string"
+              },
+              "actions": {
+                "type": "object",
+                "required": [
+                  "checkIn"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "portal": {
+                    "type": "string"
+                  },
+                  "checkIn": {
+                    "type": "object",
+                    "required": [],
+                    "additionalProperties": false,
+                    "properties": {
+                      "url": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "reschedule": {
+                    "type": "object",
+                    "properties": {
+                      "url": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "confirm": {
+                    "type": "object",
+                    "properties": {
+                      "url": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "required": [
+              "patient",
+              "provider",
+              "attorneys",
+              "managers",
+              "firm",
+              "legalCase",
+              "appointment",
+              "channels",
+              "role",
+              "actions"
+            ]
+          },
+          "context": {
+            "type": "object",
+            "description": "Context data passed at trigger time following ContextPayload structure",
+            "properties": {},
+            "required": [],
+            "additionalProperties": {
+              "type": "object",
+              "description": "Context value - can be accessed as string or object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "description": "Context identifier"
+                },
+                "data": {
+                  "type": "object",
+                  "description": "Additional context data",
+                  "properties": {},
+                  "additionalProperties": true
+                }
+              },
+              "required": [],
+              "additionalProperties": false
+            }
+          },
+          "env": {
+            "type": "object",
+            "description": "Environment variables accessible in workflow templates",
+            "properties": {
+              "name": {
+                "type": "string",
+                "description": "Environment variable: name"
+              },
+              "type": {
+                "type": "string",
+                "description": "Environment variable: type"
+              }
+            },
+            "required": [],
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  ],
+  "dashboardHash": "7f34caf80153"
+}

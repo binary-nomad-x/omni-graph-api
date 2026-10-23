@@ -64,9 +64,26 @@
       },
       "onboardingLink": {
         "type": "string"
+      },
+      "scheduledDateTime": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "format": "date-time"
+      },
+      "triggerSteps": {
+        "type": "object",
+        "properties": {
+          "onboardingUser": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          }
+        }
       }
-    },
-    "required": []
+    }
   },
   "preferences": {
     "user": {
@@ -126,7 +143,7 @@
   "steps": [
     {
       "stepId": "email-step",
-      "name": "onboard user",
+      "name": "Onboarding User",
       "type": "email",
       "bodyFile": "email-step.html",
       "controlValues": {
@@ -140,7 +157,19 @@
         },
         "useProviderDefaults": false,
         "replyTo": "",
-        "preheader": ""
+        "preheader": "",
+        "skip": {
+          "and": [
+            {
+              "!=": [
+                {
+                  "var": "payload.triggerSteps.onboardingUser"
+                },
+                null
+              ]
+            }
+          ]
+        }
       },
       "variables": {
         "type": "object",
@@ -358,9 +387,26 @@
               },
               "onboardingLink": {
                 "type": "string"
+              },
+              "scheduledDateTime": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "format": "date-time"
+              },
+              "triggerSteps": {
+                "type": "object",
+                "properties": {
+                  "onboardingUser": {
+                    "type": [
+                      "boolean",
+                      "null"
+                    ]
+                  }
+                }
               }
-            },
-            "required": []
+            }
           },
           "context": {
             "type": "object",
@@ -407,22 +453,35 @@
       }
     },
     {
-      "stepId": "email-step-t2ad94ci",
-      "name": "notify admin",
-      "type": "email",
-      "bodyFile": "email-step-t2ad94ci.html",
+      "stepId": "delay-step",
+      "name": "Delay Step",
+      "type": "delay",
       "controlValues": {
-        "editorType": "html",
-        "disableOutputSanitization": false,
-        "subject": "Notfiy admin and update payload",
-        "layoutId": "default-layout",
-        "from": {
-          "email": "",
-          "name": ""
-        },
-        "useProviderDefaults": false,
-        "replyTo": "",
-        "preheader": ""
+        "amount": null,
+        "unit": "seconds",
+        "cron": "",
+        "dynamicKey": "payload.patientName",
+        "type": "dynamic",
+        "extendToSchedule": false,
+        "skip": {
+          "and": [
+            {
+              "!=": [
+                {
+                  "var": "payload.scheduledDateTime"
+                },
+                null
+              ]
+            },
+            {
+              "isNonEmpty": [
+                {
+                  "var": "payload.scheduledDateTime"
+                }
+              ]
+            }
+          ]
+        }
       },
       "variables": {
         "type": "object",
@@ -647,9 +706,26 @@
               },
               "onboardingLink": {
                 "type": "string"
+              },
+              "scheduledDateTime": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "format": "date-time"
+              },
+              "triggerSteps": {
+                "type": "object",
+                "properties": {
+                  "onboardingUser": {
+                    "type": [
+                      "boolean",
+                      "null"
+                    ]
+                  }
+                }
               }
-            },
-            "required": []
+            }
           },
           "context": {
             "type": "object",
@@ -696,14 +772,14 @@
       }
     },
     {
-      "stepId": "email-step-zmf9ewcj",
-      "name": "notify reviewing team",
+      "stepId": "email-step-uohyuufb",
+      "name": "Welcome to the System",
       "type": "email",
-      "bodyFile": "email-step-zmf9ewcj.html",
+      "bodyFile": "email-step-uohyuufb.html",
       "controlValues": {
         "editorType": "html",
         "disableOutputSanitization": false,
-        "subject": "notify reviewing team | broader the payload passed to this template",
+        "subject": "Welcome to the system",
         "layoutId": "default-layout",
         "from": {
           "email": "",
@@ -878,10 +954,16 @@
                 "required": [],
                 "additionalProperties": false
               },
-              "email-step-t2ad94ci": {
+              "delay-step": {
                 "type": "object",
-                "properties": {},
-                "required": [],
+                "properties": {
+                  "duration": {
+                    "type": "number"
+                  }
+                },
+                "required": [
+                  "duration"
+                ],
                 "additionalProperties": false
               }
             },
@@ -942,9 +1024,26 @@
               },
               "onboardingLink": {
                 "type": "string"
+              },
+              "scheduledDateTime": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "format": "date-time"
+              },
+              "triggerSteps": {
+                "type": "object",
+                "properties": {
+                  "onboardingUser": {
+                    "type": [
+                      "boolean",
+                      "null"
+                    ]
+                  }
+                }
               }
-            },
-            "required": []
+            }
           },
           "context": {
             "type": "object",
@@ -991,5 +1090,5 @@
       }
     }
   ],
-  "dashboardHash": "86dd31ca9199"
+  "dashboardHash": "31b8c60683db"
 }

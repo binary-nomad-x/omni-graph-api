@@ -7,7 +7,7 @@
     "subscription"
   ],
   "active": true,
-  "validatePayload": false,
+  "validatePayload": true,
   "payloadSchema": {
     "type": "object",
     "properties": {
@@ -72,10 +72,27 @@
             "type": "string"
           }
         }
+      },
+      "notify": {
+        "type": "object",
+        "properties": {
+          "patient": {
+            "type": "string"
+          },
+          "doctor": {
+            "type": "string"
+          },
+          "admin": {
+            "type": "string"
+          }
+        },
+        "required": [],
+        "additionalProperties": false
       }
     },
     "required": [
-      "recipientRole"
+      "recipientRole",
+      "notify"
     ]
   },
   "preferences": {
@@ -99,6 +116,9 @@
           "enabled": true
         },
         "push": {
+          "enabled": true
+        },
+        "tool": {
           "enabled": true
         }
       }
@@ -349,10 +369,27 @@
                     "type": "string"
                   }
                 }
+              },
+              "notify": {
+                "type": "object",
+                "properties": {
+                  "patient": {
+                    "type": "string"
+                  },
+                  "doctor": {
+                    "type": "string"
+                  },
+                  "admin": {
+                    "type": "string"
+                  }
+                },
+                "required": [],
+                "additionalProperties": false
               }
             },
             "required": [
-              "recipientRole"
+              "recipientRole",
+              "notify"
             ]
           },
           "context": {
@@ -648,653 +685,27 @@
                     "type": "string"
                   }
                 }
-              }
-            },
-            "required": [
-              "recipientRole"
-            ]
-          },
-          "context": {
-            "type": "object",
-            "description": "Context data passed at trigger time following ContextPayload structure",
-            "properties": {},
-            "required": [],
-            "additionalProperties": {
-              "type": "object",
-              "description": "Context value - can be accessed as string or object",
-              "properties": {
-                "id": {
-                  "type": "string",
-                  "description": "Context identifier"
-                },
-                "data": {
-                  "type": "object",
-                  "description": "Additional context data",
-                  "properties": {},
-                  "additionalProperties": true
-                }
               },
-              "required": [],
-              "additionalProperties": false
-            }
-          },
-          "env": {
-            "type": "object",
-            "description": "Environment variables accessible in workflow templates",
-            "properties": {
-              "name": {
-                "type": "string",
-                "description": "Environment variable: name"
-              },
-              "type": {
-                "type": "string",
-                "description": "Environment variable: type"
-              }
-            },
-            "required": [],
-            "additionalProperties": false
-          }
-        },
-        "additionalProperties": false
-      }
-    },
-    {
-      "stepId": "delay-step",
-      "name": "Delay Step",
-      "type": "delay",
-      "controlValues": {
-        "amount": null,
-        "unit": "seconds",
-        "cron": "",
-        "dynamicKey": "payload.misc.reminderDateTime",
-        "type": "dynamic",
-        "extendToSchedule": true,
-        "skip": {
-          "and": [
-            {
-              "!=": [
-                {
-                  "var": "payload.misc.reminderDateTime"
-                },
-                null
-              ]
-            }
-          ]
-        }
-      },
-      "variables": {
-        "type": "object",
-        "properties": {
-          "workflow": {
-            "type": "object",
-            "description": "Schema representing the workflow entity",
-            "properties": {
-              "workflowId": {
-                "type": "string",
-                "description": "Workflow identifier"
-              },
-              "name": {
-                "type": "string",
-                "description": "Name of the workflow"
-              },
-              "description": {
-                "type": "string",
-                "description": "Description of the workflow"
-              },
-              "tags": {
-                "type": "array",
-                "items": {
-                  "type": "string"
-                }
-              },
-              "severity": {
-                "type": "string",
-                "enum": [
-                  "high",
-                  "medium",
-                  "low",
-                  "none"
-                ],
-                "enumName": "SeverityLevelEnum",
-                "description": "Severity of the workflow"
-              }
-            },
-            "required": [
-              "workflowId",
-              "name"
-            ]
-          },
-          "subscriber": {
-            "type": "object",
-            "description": "Schema representing the subscriber entity",
-            "properties": {
-              "firstName": {
-                "type": "string",
-                "description": "Subscriber's first name"
-              },
-              "lastName": {
-                "type": "string",
-                "description": "Subscriber's last name"
-              },
-              "email": {
-                "type": "string",
-                "description": "Subscriber's email address"
-              },
-              "phone": {
-                "type": "string",
-                "description": "Subscriber's phone number (optional)"
-              },
-              "avatar": {
-                "type": "string",
-                "description": "URL to the subscriber's avatar image (optional)"
-              },
-              "locale": {
-                "type": "string",
-                "description": "Locale for the subscriber (optional)"
-              },
-              "timezone": {
-                "type": "string",
-                "description": "Timezone for the subscriber (optional)"
-              },
-              "subscriberId": {
-                "type": "string",
-                "description": "Unique identifier for the subscriber"
-              },
-              "isOnline": {
-                "type": "boolean",
-                "description": "Indicates if the subscriber is online (optional)"
-              },
-              "lastOnlineAt": {
-                "type": "string",
-                "format": "date-time",
-                "description": "The last time the subscriber was online (optional)"
-              },
-              "data": {
-                "type": "object",
-                "properties": {},
-                "required": [],
-                "additionalProperties": true
-              }
-            },
-            "required": [
-              "subscriberId"
-            ],
-            "additionalProperties": false
-          },
-          "actor": {
-            "type": "object",
-            "description": "Schema representing the actor entity sent during workflow trigger",
-            "properties": {
-              "firstName": {
-                "type": "string",
-                "description": "Subscriber's first name"
-              },
-              "lastName": {
-                "type": "string",
-                "description": "Subscriber's last name"
-              },
-              "email": {
-                "type": "string",
-                "description": "Subscriber's email address"
-              },
-              "phone": {
-                "type": "string",
-                "description": "Subscriber's phone number (optional)"
-              },
-              "avatar": {
-                "type": "string",
-                "description": "URL to the subscriber's avatar image (optional)"
-              },
-              "locale": {
-                "type": "string",
-                "description": "Locale for the subscriber (optional)"
-              },
-              "timezone": {
-                "type": "string",
-                "description": "Timezone for the subscriber (optional)"
-              },
-              "subscriberId": {
-                "type": "string",
-                "description": "Unique identifier for the subscriber"
-              },
-              "isOnline": {
-                "type": "boolean",
-                "description": "Indicates if the subscriber is online (optional)"
-              },
-              "lastOnlineAt": {
-                "type": "string",
-                "format": "date-time",
-                "description": "The last time the subscriber was online (optional)"
-              },
-              "data": {
-                "type": "object",
-                "properties": {},
-                "required": [],
-                "additionalProperties": true
-              }
-            },
-            "required": [
-              "subscriberId"
-            ],
-            "additionalProperties": false
-          },
-          "steps": {
-            "type": "object",
-            "properties": {
-              "email-step": {
-                "type": "object",
-                "properties": {},
-                "required": [],
-                "additionalProperties": false
-              },
-              "email-step-l5vm669i": {
-                "type": "object",
-                "properties": {},
-                "required": [],
-                "additionalProperties": false
-              }
-            },
-            "required": [],
-            "additionalProperties": false,
-            "description": "Previous Steps Results"
-          },
-          "payload": {
-            "type": "object",
-            "properties": {
-              "subscription": {
+              "notify": {
                 "type": "object",
                 "properties": {
-                  "plan": {
-                    "type": "object",
-                    "properties": {
-                      "name": {
-                        "type": "string"
-                      }
-                    }
-                  },
-                  "trialEnd": {
+                  "patient": {
                     "type": "string"
                   },
-                  "nextBillingDate": {
-                    "type": "string"
-                  }
-                }
-              },
-              "notification": {
-                "type": "object",
-                "properties": {
-                  "daysUntilAction": {
-                    "type": "string"
-                  }
-                }
-              },
-              "billing": {
-                "type": "object",
-                "properties": {
-                  "nextChargeDisplayAmount": {
-                    "type": "string"
-                  }
-                }
-              },
-              "payment": {
-                "type": "object",
-                "properties": {
-                  "method": {
-                    "type": "object",
-                    "properties": {
-                      "type": {
-                        "type": "string"
-                      }
-                    }
-                  }
-                }
-              },
-              "recipientRole": {
-                "type": [
-                  "string",
-                  "null"
-                ]
-              },
-              "misc": {
-                "type": "object",
-                "properties": {
-                  "reminderDateTime": {
-                    "type": "string"
-                  }
-                }
-              }
-            },
-            "required": [
-              "recipientRole"
-            ]
-          },
-          "context": {
-            "type": "object",
-            "description": "Context data passed at trigger time following ContextPayload structure",
-            "properties": {},
-            "required": [],
-            "additionalProperties": {
-              "type": "object",
-              "description": "Context value - can be accessed as string or object",
-              "properties": {
-                "id": {
-                  "type": "string",
-                  "description": "Context identifier"
-                },
-                "data": {
-                  "type": "object",
-                  "description": "Additional context data",
-                  "properties": {},
-                  "additionalProperties": true
-                }
-              },
-              "required": [],
-              "additionalProperties": false
-            }
-          },
-          "env": {
-            "type": "object",
-            "description": "Environment variables accessible in workflow templates",
-            "properties": {
-              "name": {
-                "type": "string",
-                "description": "Environment variable: name"
-              },
-              "type": {
-                "type": "string",
-                "description": "Environment variable: type"
-              }
-            },
-            "required": [],
-            "additionalProperties": false
-          }
-        },
-        "additionalProperties": false
-      }
-    },
-    {
-      "stepId": "email-step-wqoii0ty",
-      "name": "Email Step",
-      "type": "email",
-      "bodyFile": "email-step-wqoii0ty.html",
-      "controlValues": {
-        "editorType": "html",
-        "disableOutputSanitization": false,
-        "subject": "Trial ending | Attention needed | Delayed workflow",
-        "layoutId": "default-layout",
-        "from": {
-          "email": "",
-          "name": ""
-        },
-        "skip": {
-          "and": [
-            {
-              "!=": [
-                {
-                  "var": "payload.misc.reminderDateTime"
-                },
-                null
-              ]
-            }
-          ]
-        }
-      },
-      "variables": {
-        "type": "object",
-        "properties": {
-          "workflow": {
-            "type": "object",
-            "description": "Schema representing the workflow entity",
-            "properties": {
-              "workflowId": {
-                "type": "string",
-                "description": "Workflow identifier"
-              },
-              "name": {
-                "type": "string",
-                "description": "Name of the workflow"
-              },
-              "description": {
-                "type": "string",
-                "description": "Description of the workflow"
-              },
-              "tags": {
-                "type": "array",
-                "items": {
-                  "type": "string"
-                }
-              },
-              "severity": {
-                "type": "string",
-                "enum": [
-                  "high",
-                  "medium",
-                  "low",
-                  "none"
-                ],
-                "enumName": "SeverityLevelEnum",
-                "description": "Severity of the workflow"
-              }
-            },
-            "required": [
-              "workflowId",
-              "name"
-            ]
-          },
-          "subscriber": {
-            "type": "object",
-            "description": "Schema representing the subscriber entity",
-            "properties": {
-              "firstName": {
-                "type": "string",
-                "description": "Subscriber's first name"
-              },
-              "lastName": {
-                "type": "string",
-                "description": "Subscriber's last name"
-              },
-              "email": {
-                "type": "string",
-                "description": "Subscriber's email address"
-              },
-              "phone": {
-                "type": "string",
-                "description": "Subscriber's phone number (optional)"
-              },
-              "avatar": {
-                "type": "string",
-                "description": "URL to the subscriber's avatar image (optional)"
-              },
-              "locale": {
-                "type": "string",
-                "description": "Locale for the subscriber (optional)"
-              },
-              "timezone": {
-                "type": "string",
-                "description": "Timezone for the subscriber (optional)"
-              },
-              "subscriberId": {
-                "type": "string",
-                "description": "Unique identifier for the subscriber"
-              },
-              "isOnline": {
-                "type": "boolean",
-                "description": "Indicates if the subscriber is online (optional)"
-              },
-              "lastOnlineAt": {
-                "type": "string",
-                "format": "date-time",
-                "description": "The last time the subscriber was online (optional)"
-              },
-              "data": {
-                "type": "object",
-                "properties": {},
-                "required": [],
-                "additionalProperties": true
-              }
-            },
-            "required": [
-              "subscriberId"
-            ],
-            "additionalProperties": false
-          },
-          "actor": {
-            "type": "object",
-            "description": "Schema representing the actor entity sent during workflow trigger",
-            "properties": {
-              "firstName": {
-                "type": "string",
-                "description": "Subscriber's first name"
-              },
-              "lastName": {
-                "type": "string",
-                "description": "Subscriber's last name"
-              },
-              "email": {
-                "type": "string",
-                "description": "Subscriber's email address"
-              },
-              "phone": {
-                "type": "string",
-                "description": "Subscriber's phone number (optional)"
-              },
-              "avatar": {
-                "type": "string",
-                "description": "URL to the subscriber's avatar image (optional)"
-              },
-              "locale": {
-                "type": "string",
-                "description": "Locale for the subscriber (optional)"
-              },
-              "timezone": {
-                "type": "string",
-                "description": "Timezone for the subscriber (optional)"
-              },
-              "subscriberId": {
-                "type": "string",
-                "description": "Unique identifier for the subscriber"
-              },
-              "isOnline": {
-                "type": "boolean",
-                "description": "Indicates if the subscriber is online (optional)"
-              },
-              "lastOnlineAt": {
-                "type": "string",
-                "format": "date-time",
-                "description": "The last time the subscriber was online (optional)"
-              },
-              "data": {
-                "type": "object",
-                "properties": {},
-                "required": [],
-                "additionalProperties": true
-              }
-            },
-            "required": [
-              "subscriberId"
-            ],
-            "additionalProperties": false
-          },
-          "steps": {
-            "type": "object",
-            "properties": {
-              "email-step": {
-                "type": "object",
-                "properties": {},
-                "required": [],
-                "additionalProperties": false
-              },
-              "email-step-l5vm669i": {
-                "type": "object",
-                "properties": {},
-                "required": [],
-                "additionalProperties": false
-              },
-              "delay-step": {
-                "type": "object",
-                "properties": {
-                  "duration": {
-                    "type": "number"
-                  }
-                },
-                "required": [
-                  "duration"
-                ],
-                "additionalProperties": false
-              }
-            },
-            "required": [],
-            "additionalProperties": false,
-            "description": "Previous Steps Results"
-          },
-          "payload": {
-            "type": "object",
-            "properties": {
-              "subscription": {
-                "type": "object",
-                "properties": {
-                  "plan": {
-                    "type": "object",
-                    "properties": {
-                      "name": {
-                        "type": "string"
-                      }
-                    }
-                  },
-                  "trialEnd": {
+                  "doctor": {
                     "type": "string"
                   },
-                  "nextBillingDate": {
+                  "admin": {
                     "type": "string"
                   }
-                }
-              },
-              "notification": {
-                "type": "object",
-                "properties": {
-                  "daysUntilAction": {
-                    "type": "string"
-                  }
-                }
-              },
-              "billing": {
-                "type": "object",
-                "properties": {
-                  "nextChargeDisplayAmount": {
-                    "type": "string"
-                  }
-                }
-              },
-              "payment": {
-                "type": "object",
-                "properties": {
-                  "method": {
-                    "type": "object",
-                    "properties": {
-                      "type": {
-                        "type": "string"
-                      }
-                    }
-                  }
-                }
-              },
-              "recipientRole": {
-                "type": [
-                  "string",
-                  "null"
-                ]
-              },
-              "misc": {
-                "type": "object",
-                "properties": {
-                  "reminderDateTime": {
-                    "type": "string"
-                  }
-                }
+                },
+                "required": [],
+                "additionalProperties": false
               }
             },
             "required": [
-              "recipientRole"
+              "recipientRole",
+              "notify"
             ]
           },
           "context": {
@@ -1342,5 +753,5 @@
       }
     }
   ],
-  "dashboardHash": "27878fbe57a8"
+  "dashboardHash": "f466b5d3bbd7"
 }

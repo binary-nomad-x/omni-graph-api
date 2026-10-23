@@ -25,6 +25,8 @@ const runId = new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19);
 export class RunLogger {
   private readonly logFile: string;
   private readonly latestLink: string;
+
+  // the shape log array
   private entries: Array<{ level: string; message: string; data?: unknown }> = [];
 
   constructor() {
