@@ -1,12 +1,20 @@
 import { createHash } from "node:crypto";
 import type { LayoutJson, WorkflowJson } from "./types.js";
 
-function stripArtifacts<T>(value: T): T {
+/**
+ * Remove locally-generated artifacts so local and remote JSON hash identically.
+ *
+ * - `dashboardHash` / `bodyFile` are local bookkeeping fields.
+ * - For WORKFLOW STEPS, `variables` is derived by Novu from controlValues +
+ *   payloadSchema, so it can never match across environments — ignore it.
+ * - For LAYOUTS, `variables` is a real user-defined field and MUST be hashed;
+ *   stripping it would hide genuine layout changes from diff/status.
+ */
+function stripArtifacts<T>(value: T, opts: { stripLayoutVariables?: boolean } = {}): T {
   const copy = JSON.parse(JSON.stringify(value)) as Record<string, unknown>;
   delete copy.dashboardHash;
   delete copy.bodyFile;
-  // `variables` is derived by Novu from controlValues + payloadSchema; ignore for change detection
-  delete copy.variables;
+  if (opts.stripLayoutVariables) delete copy.variables;
   if (Array.isArray(copy.steps)) {
     for (const s of copy.steps as Array<Record<string, unknown>>) {
       delete s.bodyFile;
@@ -37,5 +45,5 @@ function stableStringify(value: unknown): string {
     const keys = Object.keys(obj).sort();
     return `{${keys.map((k) => `${JSON.stringify(k)}:${stableStringify(obj[k])}`).join(",")}}`;
   }
-  return JSON.stringify(value);
+  return JSON.stringify(value) ?? "null";
 }

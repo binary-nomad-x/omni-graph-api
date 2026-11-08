@@ -165,48 +165,51 @@ const GROUPS: NovuGroupSeed[] = [
 export async function seedNovu(ctx: SeedContext, counts: SeedCounts): Promise<void> {
   const existedBefore = (await ctx.prisma.novuWorkflow.count()) > 0;
 
-  for (const wf of WORKFLOWS) {
-    await ctx.prisma.novuWorkflow.upsert({
-      where: { workflowId: wf.workflowId },
-      update: {},
-      create: {
-        workflowId: wf.workflowId,
-        name: wf.name,
-        description: wf.description,
-        tags: wf.tags,
-        status: "ACTIVE",
-        active: true,
-      },
-    });
-  }
-  counts.novuWorkflows += existedBefore ? 0 : WORKFLOWS.length;
+  // One bulk insert replaces 21 upserts; skipDuplicates keeps it idempotent.
+  const workflows = await ctx.prisma.novuWorkflow.createMany({
+    data: WORKFLOWS.map((wf) => ({
+      workflowId: wf.workflowId,
+      name: wf.name,
+      description: wf.description,
+      tags: wf.tags,
+      status: "ACTIVE",
+      active: true,
+    })),
+    skipDuplicates: true,
+  });
+  counts.novuWorkflows += existedBefore ? 0 : workflows.count;
 
   const groupsExist = (await ctx.prisma.novuVariableGroup.count()) > 0;
   if (!groupsExist) {
-    for (const group of GROUPS) {
-      const created = await ctx.prisma.novuVariableGroup.create({
-        data: {
+    const groupIds = GROUPS.map(() => crypto.randomUUID());
+
+    const [groupCount] = await Promise.all([
+      ctx.prisma.novuVariableGroup.createMany({
+        data: GROUPS.map((group, i) => ({
+          id: groupIds[i],
           name: group.name,
           description: group.description,
           sortOrder: group.sortOrder,
-        },
-      });
-      counts.novuVariableGroups++;
-
-      await ctx.prisma.novuVariable.createMany({
-        data: group.variables.map((v) => ({
-          groupId: created.id,
-          key: v.key,
-          type: v.type,
-          label: v.label,
-          description: v.description,
-          exampleValue: v.exampleValue,
-          required: v.required,
-          defaultValue: v.defaultValue ?? null,
-          aliases: v.aliases ?? [],
         })),
-      });
-      counts.novuVariables += group.variables.length;
-    }
+      }),
+      ctx.prisma.novuVariable.createMany({
+        data: GROUPS.flatMap((group, i) =>
+          group.variables.map((v) => ({
+            groupId: groupIds[i],
+            key: v.key,
+            type: v.type,
+            label: v.label,
+            description: v.description,
+            exampleValue: v.exampleValue,
+            required: v.required,
+            defaultValue: v.defaultValue ?? null,
+            aliases: v.aliases ?? [],
+          })),
+        ),
+      }),
+    ]);
+
+    counts.novuVariableGroups += groupCount.count;
+    counts.novuVariables += GROUPS.reduce((sum, g) => sum + g.variables.length, 0);
   }
 }

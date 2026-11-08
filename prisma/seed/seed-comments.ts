@@ -1,5 +1,7 @@
 import { faker } from "@faker-js/faker";
+import { Prisma } from "@prisma/client";
 import type { SeedContext, SeedCounts, CommentSeed } from "./types.js";
+import { createManyChunked } from "./utils.js";
 
 export async function seedComments(ctx: SeedContext, counts: SeedCounts, userIds: string[], postIds: string[]): Promise<void> {
   const data: CommentSeed[] = [];
@@ -23,7 +25,7 @@ export async function seedComments(ctx: SeedContext, counts: SeedCounts, userIds
     }
   }
 
-  await ctx.prisma.comment.createMany({ data });
+  await createManyChunked(ctx.prisma.comment, data);
   const created = await ctx.prisma.comment.findMany({
     where: { postId: { in: postIds } },
     select: { id: true, postId: true },
@@ -53,22 +55,19 @@ export async function seedComments(ctx: SeedContext, counts: SeedCounts, userIds
   }
 
   if (replyData.length > 0) {
-    await ctx.prisma.comment.createMany({ data: replyData });
+    await createManyChunked(ctx.prisma.comment, replyData);
     counts.comments += replyData.length;
   }
 
-  // Keep post.commentCount accurate
-  const byPost = await ctx.prisma.comment.groupBy({
-    by: ["postId"],
-    _count: { _all: true },
-  });
-
-  await ctx.prisma.$transaction(
-    byPost.map((g) =>
-      ctx.prisma.post.update({
-        where: { id: g.postId },
-        data: { commentCount: g._count._all },
-      }),
-    ),
-  );
+  // Keep post.commentCount accurate — one statement instead of one UPDATE per post.
+  await ctx.prisma.$executeRaw`
+    UPDATE posts SET "commentCount" = counts.cnt
+    FROM (
+      SELECT "postId", COUNT(*)::int AS cnt
+      FROM comments
+      WHERE "postId" IN (${Prisma.join(postIds)})
+      GROUP BY "postId"
+    ) AS counts
+    WHERE posts.id = counts."postId";
+  `;
 }

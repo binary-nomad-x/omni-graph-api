@@ -1,5 +1,6 @@
 import { faker } from "@faker-js/faker";
 import type { SeedContext, SeedCounts, PostViewSeed } from "./types.js";
+import { createManyChunked } from "./utils.js";
 
 const DEVICES = ["desktop", "mobile", "tablet", "smart_tv"];
 const BROWSERS = ["Chrome", "Firefox", "Safari", "Edge", "Opera"];
@@ -36,6 +37,6 @@ export async function seedPostViews(ctx: SeedContext, counts: SeedCounts, postId
     }
   }
 
-  await ctx.prisma.postView.createMany({ data });
+  await createManyChunked(ctx.prisma.postView, data);
   counts.postViews += data.length;
 }

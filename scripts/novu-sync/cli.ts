@@ -53,7 +53,7 @@ async function main(): Promise<void> {
   const args = parseArgs();
   const command = args._command ?? "help";
   const target = args._target;
-  const only = args.only;
+  const only = args.only && args.only !== "" ? args.only : undefined;
   const type = args.type as "workflow" | "layout" | undefined;
   const force = args.force === "true";
   const dryRun = args["dry-run"] === "true" || args.plan === "true";
@@ -164,9 +164,9 @@ USAGE
   tsx scripts/novu-sync/cli.ts <command> [options]
 
 COMMANDS
-  list                            List all workflows and layouts
+  list                            List all workflows and layouts (all pages)
   status                          Show sync status
-  diff <slug>                     Show diff for a workflow or layout
+  diff <slug>                     Show a field-level diff for a workflow or layout
   pull                            Pull from Novu dashboard to local files
   push                            Push local files to Novu dashboard
   create-workflow <slug>          Scaffold a new workflow
@@ -174,6 +174,14 @@ COMMANDS
   delete-workflow <slug>          Delete workflow locally and remotely
   delete-layout <slug>            Delete layout locally and remotely
   help                            Show this help message
+
+NOTES
+  pull    Fetches FULL definitions (list responses omit step bodies and layout
+          content), skips items already up to date, and respects --dry-run.
+  diff    Prints field-level changes plus a line diff for step bodies and
+          layout content, instead of dumping entire JSON documents.
+  push    Compares content first ("already in sync"), then applies the drift
+          guard only when the remote actually changed since the last pull.
 
 OPTIONS
   --only=<slug>                   Operate on a single item

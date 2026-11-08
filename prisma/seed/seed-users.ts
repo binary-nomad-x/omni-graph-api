@@ -40,41 +40,33 @@ export async function seedUsers(ctx: SeedContext, counts: SeedCounts, count: num
     });
   }
 
-  const users = await Promise.all(
-    userData.map(({ locale, timezone, metadata, ...data }) =>
-      ctx.prisma.user.create({
-        data: {
-          ...data,
-          locale,
-          timezone,
-          metadata: JSON.parse(JSON.stringify(metadata)),
-        },
-      }),
-    ),
-  );
+  const users = await ctx.prisma.user.createManyAndReturn({
+    data: userData.map(({ locale, timezone, metadata, ...data }) => ({
+      ...data,
+      locale,
+      timezone,
+      metadata: JSON.parse(JSON.stringify(metadata)),
+    })),
+  });
 
-  await Promise.all(
-    users.map((user) =>
-      ctx.prisma.profile.create({
-        data: {
-          userId: user.id,
-          bio: faker.lorem.sentence({ min: 5, max: 30 }),
-          avatar: faker.image.avatar(),
-          phone: faker.phone.number(),
-          address: faker.location.streetAddress(),
-          fullName: faker.person.fullName(),
-          dateOfBirth: faker.date.birthdate({ min: 18, max: 65, mode: "age" }),
-          gender: faker.helpers.arrayElement(["male", "female", "other"]),
-          occupation: faker.person.jobTitle(),
-          company: faker.company.name(),
-          website: faker.internet.url(),
-          education: faker.helpers.arrayElement(["High School", "Bachelor's", "Master's", "PhD", "Associate's"]),
-          newsletter: faker.datatype.boolean({ probability: 0.8 }),
-          marketingOptIn: faker.datatype.boolean({ probability: 0.6 }),
-        },
-      }),
-    ),
-  );
+  await ctx.prisma.profile.createMany({
+    data: users.map((user) => ({
+      userId: user.id,
+      bio: faker.lorem.sentence({ min: 5, max: 30 }),
+      avatar: faker.image.avatar(),
+      phone: faker.phone.number(),
+      address: faker.location.streetAddress(),
+      fullName: faker.person.fullName(),
+      dateOfBirth: faker.date.birthdate({ min: 18, max: 65, mode: "age" }),
+      gender: faker.helpers.arrayElement(["male", "female", "other"]),
+      occupation: faker.person.jobTitle(),
+      company: faker.company.name(),
+      website: faker.internet.url(),
+      education: faker.helpers.arrayElement(["High School", "Bachelor's", "Master's", "PhD", "Associate's"]),
+      newsletter: faker.datatype.boolean({ probability: 0.8 }),
+      marketingOptIn: faker.datatype.boolean({ probability: 0.6 }),
+    })),
+  });
 
   counts.users += users.length;
   counts.profiles += users.length;
