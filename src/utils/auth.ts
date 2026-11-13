@@ -12,7 +12,7 @@ export function comparePassword(password: string, hash: string): Promise<boolean
   return bcrypt.compare(password, hash);
 }
 
-export function generateToken(payload: Pick<JwtPayload, "userId" | "email">): string {
+export function generateToken(payload: Pick<JwtPayload, "userId" | "email"> & { role?: string }): string {
   return jwt.sign(payload, JWT_SECRET, { expiresIn: "7d" });
 }
 
