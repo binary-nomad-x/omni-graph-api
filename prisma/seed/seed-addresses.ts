@@ -68,6 +68,6 @@ export async function seedAddresses(ctx: SeedContext, counts: SeedCounts, userId
     }
   }
 
-  await ctx.prisma.$transaction(data.map((d) => ctx.prisma.address.create({ data: d })));
+  await ctx.prisma.address.createMany({ data });
   counts.addresses += data.length;
 }

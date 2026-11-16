@@ -3,6 +3,7 @@ import { resolve } from "node:path";
 import { ApiError, NovuApiClient } from "./api-client.js";
 import { RunLogger } from "./logger.js";
 import { hashLayout, hashWorkflow } from "./hashing.js";
+import { diffJson, diffLines, renderChanges } from "./diff-utils.js";
 import {
   getLayoutsDir,
   getWorkflowsDir,
@@ -18,6 +19,32 @@ import {
 import { ensureDir, writeJsonAtomic, writeTextAtomic } from "./file-utils.js";
 import type { LayoutJson, SyncResult, SyncSummary, WorkflowJson } from "./types.js";
 
+// ─── Concurrency helper ───────────────────────────────────────
+
+/** Run an async mapper over items with bounded parallelism. */
+async function mapWithConcurrency<T, R>(
+  items: T[],
+  limit: number,
+  fn: (item: T) => Promise<R>,
+): Promise<Array<PromiseSettledResult<R>>> {
+  const results: Array<PromiseSettledResult<R>> = new Array(items.length);
+  let next = 0;
+
+  const workers = Array.from({ length: Math.max(1, Math.min(limit, items.length)) }, async () => {
+    while (next < items.length) {
+      const index = next++;
+      try {
+        results[index] = { status: "fulfilled", value: await fn(items[index]) };
+      } catch (err) {
+        results[index] = { status: "rejected", reason: err };
+      }
+    }
+  });
+
+  await Promise.all(workers);
+  return results;
+}
+
 // ─── API response normalizers ─────────────────────────────────
 
 function normalizeApiWorkflow(api: Record<string, unknown>): WorkflowJson {
@@ -26,7 +53,6 @@ function normalizeApiWorkflow(api: Record<string, unknown>): WorkflowJson {
     name: (s.name ?? "") as string,
     type: (s.type ?? "") as string,
     controlValues: s.controlValues as Record<string, unknown> | undefined,
-    variables: s.variables as Record<string, unknown> | undefined,
   }));
 
   const wf: WorkflowJson = {
@@ -95,6 +121,18 @@ export class SyncEngine {
     ensureDir(getLayoutsDir());
   }
 
+  /** Fetch a full layout by slug, falling back to its Novu layoutId on 404. */
+  private async getLayoutFull(slug: string, layoutId?: string): Promise<Record<string, unknown>> {
+    try {
+      return await this.api.getLayout(slug);
+    } catch (err) {
+      if (err instanceof ApiError && err.statusCode === 404 && layoutId) {
+        return await this.api.getLayout(layoutId);
+      }
+      throw err;
+    }
+  }
+
   // ─── List ───────────────────────────────────────────────────
 
   async list(): Promise<void> {
@@ -113,7 +151,7 @@ export class SyncEngine {
       for (const item of remoteData.data as Array<Record<string, unknown>>) {
         const slug = (item.workflowId ?? item.slug ?? item._id) as string;
         const label = localSlugs.has(slug) ? "both " : "remote";
-        this.log.info(`  [${label}] ${slug.padEnd(30)} ${item.name as string}`);
+        this.log.info(`  [${label}]  ${slug.padEnd(30)} ${item.name as string}`);
       }
     } catch (err) {
       this.log.warn("Could not fetch remote workflows", { error: String(err) });
@@ -132,9 +170,9 @@ export class SyncEngine {
     try {
       const remoteData = await this.api.listLayouts();
       for (const item of remoteData.data as Array<Record<string, unknown>>) {
-        const slug = (item.slug ?? item.identifier ?? item._id) as string;
+        const slug = layoutSlug(item);
         const label = localLayoutSlugs.has(slug) ? "both " : "remote";
-        this.log.info(`  [${label}] ${slug.padEnd(30)} ${item.name as string}`);
+        this.log.info(`  [${label}]  ${slug.padEnd(30)} ${item.name as string}`);
       }
     } catch (err) {
       this.log.warn("Could not fetch remote layouts", { error: String(err) });
@@ -159,18 +197,20 @@ export class SyncEngine {
       this.log.warn("Could not fetch remote workflows", { error: String(err) });
     }
 
-    // Fetch full workflow details so hashes compare accurately (list returns summary steps only)
-    const detailedWfs: Array<Record<string, unknown>> = [];
-    const wfIds = (only
-      ? remoteWfs.filter((w) => (w.workflowId ?? w.slug ?? w._id) === only)
-      : remoteWfs).map((w) => (w.workflowId ?? w.slug ?? w._id) as string);
-    const resultsMap = await Promise.allSettled(wfIds.map((id) => this.api.getWorkflow(id)));
-    for (const r of resultsMap) {
-      if (r.status === "fulfilled") detailedWfs.push(r.value);
-      else this.log.warn("Could not fetch remote workflow detail", { error: String(r.reason) });
-    }
+    // Fetch full workflow details so hashes compare accurately (list returns summary steps only).
+    // Bounded concurrency — one request per workflow, 5 at a time.
+    const wfTargets = remoteWfs.filter((w) => !only || (w.workflowId ?? w.slug ?? w._id) === only);
+    const settled = await mapWithConcurrency(wfTargets, 5, (w) => this.api.getWorkflow((w.workflowId ?? w.slug ?? w._id) as string));
 
-    const remoteWfBySlug = new Map(detailedWfs.map((w) => [(w.workflowId ?? w.slug ?? w._id) as string, w]));
+    const remoteWfBySlug = new Map<string, Record<string, unknown>>();
+    for (const r of settled) {
+      if (r.status === "fulfilled") {
+        const wf = r.value;
+        remoteWfBySlug.set(((wf.workflowId ?? wf.slug ?? wf._id) as string), wf);
+      } else {
+        this.log.warn("Could not fetch remote workflow detail", { error: String(r.reason) });
+      }
+    }
 
     const allWfSlugs = new Set([...localWfBySlug.keys(), ...remoteWfBySlug.keys()]);
 
@@ -179,7 +219,7 @@ export class SyncEngine {
       const local = localWfBySlug.get(slug);
       const remote = remoteWfBySlug.get(slug);
       const localHash = local ? hashWorkflow(local) : undefined;
-      const remoteHash = remote ? hashWorkflow(normalizeApiWorkflow(remote)) : undefined;
+      const remoteHash = remote ? normalizeApiWorkflow(remote).dashboardHash : undefined;
       results.push({
         type: "workflow",
         slug,
@@ -203,7 +243,20 @@ export class SyncEngine {
       this.log.warn("Could not fetch remote layouts", { error: String(err) });
     }
 
-    const remoteLayoutBySlug = new Map(remoteLayouts.map((l) => [layoutSlug(l), l]));
+    // Fetch full layout details too — the list response omits `content`.
+    const layoutTargets = remoteLayouts.filter((l) => !only || layoutSlug(l) === only);
+    const layoutSettled = await mapWithConcurrency(layoutTargets, 5, (l) => this.getLayoutFull(layoutSlug(l), l.layoutId as string));
+
+    const remoteLayoutBySlug = new Map<string, Record<string, unknown>>();
+    for (const r of layoutSettled) {
+      if (r.status === "fulfilled") {
+        const layout = r.value;
+        remoteLayoutBySlug.set(layoutSlug(layout), layout);
+      } else {
+        this.log.warn("Could not fetch remote layout detail", { error: String(r.reason) });
+      }
+    }
+
     const allLayoutSlugs = new Set([...localLayoutBySlug.keys(), ...remoteLayoutBySlug.keys()]);
 
     for (const slug of allLayoutSlugs) {
@@ -211,7 +264,7 @@ export class SyncEngine {
       const local = localLayoutBySlug.get(slug);
       const remote = remoteLayoutBySlug.get(slug);
       const localHash = local ? hashLayout(local) : undefined;
-      const remoteHash = remote ? hashLayout(normalizeApiLayout(remote)) : undefined;
+      const remoteHash = remote ? normalizeApiLayout(remote).dashboardHash : undefined;
       results.push({
         type: "layout",
         slug,
@@ -225,8 +278,8 @@ export class SyncEngine {
 
     // Print status
     for (const s of results) {
-      const state = !s.local ? "remote-only" : !s.remote ? "local-only" : s.match ? "synced    " : "drifted   ";
-      this.log.info(`  [${state}] ${s.type.padEnd(10)} ${s.slug}${s.match ? "" : `  local=${s.localHash ?? "-"}  remote=${s.remoteHash ?? "-"}`}`);
+      const state = !s.local ? "remote-only" : !s.remote ? "local-only " : s.match ? "synced     " : "drifted    ";
+      this.log.info(`  [${state}] ${s.type.padEnd(8)} ${s.slug}${s.match ? "" : `  local=${s.localHash ?? "-"}  remote=${s.remoteHash ?? "-"}`}`);
     }
 
     if (results.length === 0) this.log.info("  (nothing to sync)");
@@ -245,11 +298,9 @@ export class SyncEngine {
 
       try {
         if (t === "workflow") {
-          const api = await this.api.getWorkflow(slug);
-          remote = normalizeApiWorkflow(api);
+          remote = normalizeApiWorkflow(await this.api.getWorkflow(slug));
         } else {
-          const api = await this.api.getLayout(slug);
-          remote = normalizeApiLayout(api);
+          remote = normalizeApiLayout(await this.api.getLayout(slug));
         }
       } catch (err) {
         if (err instanceof ApiError && err.statusCode === 404) {
@@ -264,22 +315,124 @@ export class SyncEngine {
         this.log.info(`[${t}] ${slug}: not found locally or remotely`);
         continue;
       }
-
-      if (local && remote) {
-        const lHash = hashWorkflow(local as WorkflowJson);
-        const rHash = hashWorkflow(remote as WorkflowJson);
-        if (lHash === rHash) {
-          this.log.info(`[${t}] ${slug}: identical`);
-        } else {
-          this.log.info(`[${t}] ${slug}: differs  local=${lHash}  remote=${rHash}`);
-          this.log.info(`  Local:  ${JSON.stringify(local, null, 2)}`);
-          this.log.info(`  Remote: ${JSON.stringify(remote, null, 2)}`);
-        }
-      } else if (local) {
-        this.log.info(`[${t}] ${slug}: local-only`);
-      } else {
-        this.log.info(`[${t}] ${slug}: remote-only`);
+      if (!local) {
+        this.log.info(`[${t}] ${slug}: remote-only  → run "novu pull --only=${slug}" to bring it local`);
+        continue;
       }
+      if (!remote) {
+        this.log.info(`[${t}] ${slug}: local-only  → run "novu push --only=${slug}" to push it remote`);
+        continue;
+      }
+
+      if (t === "workflow") {
+        this.diffWorkflow(slug, local as WorkflowJson, remote as WorkflowJson);
+      } else {
+        this.diffLayout(slug, local as LayoutJson, remote as LayoutJson);
+      }
+    }
+  }
+
+  private diffWorkflow(slug: string, local: WorkflowJson, remote: WorkflowJson): void {
+    const lHash = hashWorkflow(local);
+    const rHash = hashWorkflow(remote);
+
+    if (lHash === rHash) {
+      this.log.info(`[workflow] ${slug}: identical`);
+      return;
+    }
+
+    this.log.info(`[workflow] ${slug}: differs  local=${lHash}  remote=${rHash}`);
+
+    // Top-level scalar fields
+    const scalarKeys = ["name", "description", "tags", "active", "validatePayload", "origin"] as const;
+    const lMeta: Record<string, unknown> = {};
+    const rMeta: Record<string, unknown> = {};
+    for (const key of scalarKeys) {
+      lMeta[key] = local[key];
+      rMeta[key] = remote[key];
+    }
+    for (const line of renderChanges(diffJson(lMeta, rMeta))) {
+      this.log.info(line);
+    }
+
+    if (local.payloadSchema !== undefined || remote.payloadSchema !== undefined) {
+      for (const line of renderChanges(diffJson(local.payloadSchema ?? {}, remote.payloadSchema ?? {}), "  payloadSchema:")) {
+        this.log.info(line);
+      }
+    }
+    if (local.preferences !== undefined || remote.preferences !== undefined) {
+      for (const line of renderChanges(diffJson(local.preferences ?? {}, remote.preferences ?? {}), "  preferences:")) {
+        this.log.info(line);
+      }
+    }
+
+    // Steps — matched by stepId, plus type/name and controlValues detail.
+    const localSteps = new Map(local.steps.map((s) => [s.stepId, s]));
+    const remoteSteps = new Map(remote.steps.map((s) => [s.stepId, s]));
+
+    for (const s of local.steps) {
+      if (!remoteSteps.has(s.stepId)) this.log.info(`  - step ${s.stepId} (${s.type}): local-only`);
+    }
+    for (const s of remote.steps) {
+      if (!localSteps.has(s.stepId)) this.log.info(`  + step ${s.stepId} (${s.type}): remote-only`);
+    }
+
+    for (const s of local.steps) {
+      const rs = remoteSteps.get(s.stepId);
+      if (!rs) continue;
+
+      if (s.name !== rs.name || s.type !== rs.type) {
+        this.log.info(`  ~ step ${s.stepId}: name ${JSON.stringify(s.name)} → ${JSON.stringify(rs.name)}, type ${JSON.stringify(s.type)} → ${JSON.stringify(rs.type)}`);
+      }
+
+      const lCv = { ...(s.controlValues ?? {}) };
+      const rCv = { ...(rs.controlValues ?? {}) };
+      const lBody = typeof lCv.body === "string" ? lCv.body : undefined;
+      const rBody = typeof rCv.body === "string" ? rCv.body : undefined;
+      delete lCv.body;
+      delete rCv.body;
+
+      for (const line of renderChanges(diffJson(lCv, rCv), `  step ${s.stepId} controlValues:`)) {
+        this.log.info(line);
+      }
+      this.logBodyDiff(`  step ${s.stepId} body:`, lBody, rBody);
+    }
+  }
+
+  private diffLayout(slug: string, local: LayoutJson, remote: LayoutJson): void {
+    const lHash = hashLayout(local);
+    const rHash = hashLayout(remote);
+
+    if (lHash === rHash) {
+      this.log.info(`[layout] ${slug}: identical`);
+      return;
+    }
+
+    this.log.info(`[layout] ${slug}: differs  local=${lHash}  remote=${rHash}`);
+
+    const keys = ["name", "description", "contentType", "isDefault", "variables"] as const;
+    const lMeta: Record<string, unknown> = {};
+    const rMeta: Record<string, unknown> = {};
+    for (const key of keys) {
+      lMeta[key] = local[key];
+      rMeta[key] = remote[key];
+    }
+    for (const line of renderChanges(diffJson(lMeta, rMeta))) {
+      this.log.info(line);
+    }
+
+    this.logBodyDiff("  content:", local.content ?? "", remote.content ?? "");
+  }
+
+  private logBodyDiff(label: string, localBody?: string, remoteBody?: string): void {
+    if (localBody === undefined && remoteBody === undefined) return;
+    const result = diffLines(localBody ?? "", remoteBody ?? "");
+    if (result.lines.every((l) => l.type === "same")) return;
+
+    this.log.info(label + (result.truncated ? ` (truncated, ${result.aLines} vs ${result.bLines} lines — too large for line diff)` : ""));
+    for (const entry of result.lines) {
+      const prefix = entry.type === "add" ? "+ " : entry.type === "del" ? "- " : "  ";
+      this.log.info(`  ${prefix}${entry.line}`);
     }
   }
 
@@ -288,28 +441,57 @@ export class SyncEngine {
   async pull(opts: { only?: string; type?: "workflow" | "layout"; dryRun?: boolean }): Promise<SyncSummary> {
     this.ensureSyncDirs();
     const summary: SyncSummary = { total: 0, created: 0, updated: 0, deleted: 0, skipped: 0, errors: 0, results: [] };
+    const dryRun = opts.dryRun === true;
 
-    // Pull workflows
+    // ── Workflows ──
     if (!opts.type || opts.type === "workflow") {
       try {
         const data = await this.api.listWorkflows();
         const workflows = data.data as Array<Record<string, unknown>>;
-        for (const apiWf of workflows) {
-          const wf = normalizeApiWorkflow(apiWf);
-          if (opts.only && wf.slug !== opts.only) continue;
+        const targets = workflows.filter((w) => !opts.only || (w.workflowId ?? w.slug ?? w._id) === opts.only);
 
+        // Fetch full details in parallel (list endpoint returns summary steps only).
+        const settled = await mapWithConcurrency(targets, 5, async (apiWf) => {
+          const slug = (apiWf.workflowId ?? apiWf.slug ?? apiWf._id) as string;
+          const full = await this.api.getWorkflow((apiWf.workflowId ?? slug) as string);
+          return { slug, wf: normalizeApiWorkflow(full) };
+        });
+
+        for (const r of settled) {
+          if (r.status === "rejected") {
+            summary.errors++;
+            summary.results.push({ workflowId: "?", action: "error", detail: String(r.reason) });
+            continue;
+          }
+
+          const { slug, wf } = r.value;
           summary.total++;
+
           try {
-            const full = await this.api.getWorkflow(wf.workflowId || wf.slug);
-            const fullWf = normalizeApiWorkflow(full);
-            const ok = saveWorkflow(fullWf, this.log);
+            const local = loadWorkflow(slug, this.log);
+            if (local && hashWorkflow(local) === wf.dashboardHash) {
+              summary.skipped++;
+              summary.results.push({ workflowId: wf.workflowId, action: "noop", detail: `${slug}: already up to date` });
+              if (dryRun) this.log.info(`[DRY-RUN] ${slug}: would skip (unchanged)`);
+              continue;
+            }
+
+            const action = local ? "update" : "create";
+            if (dryRun) {
+              this.log.info(`[DRY-RUN] Would ${action} workflow: ${slug}`);
+              summary.results.push({ workflowId: wf.workflowId, action, detail: `Would ${action} ${slug}` });
+              continue;
+            }
+
+            const ok = saveWorkflow(wf, this.log);
             if (ok) {
-              summary.created++;
-              summary.results.push({ workflowId: wf.workflowId, action: "create", detail: `Pulled ${wf.slug}` });
-              if (opts.dryRun) this.log.info(`[DRY-RUN] Would pull workflow: ${wf.slug}`);
+              if (action === "create") summary.created++;
+              else summary.updated++;
+              summary.results.push({ workflowId: wf.workflowId, action, detail: `Pulled ${slug}` });
+              this.log.info(`[workflow] ${slug}: pulled (${action})`);
             } else {
               summary.errors++;
-              summary.results.push({ workflowId: wf.workflowId, action: "error", detail: `Failed to save ${wf.slug}` });
+              summary.results.push({ workflowId: wf.workflowId, action: "error", detail: `Failed to save ${slug}` });
             }
           } catch (err) {
             summary.errors++;
@@ -317,39 +499,70 @@ export class SyncEngine {
           }
         }
       } catch (err) {
+        summary.errors++;
         this.log.error("Failed to list workflows for pull", { error: String(err) });
       }
     }
 
-    // Pull layouts
+    // ── Layouts ──
     if (!opts.type || opts.type === "layout") {
       try {
         const data = await this.api.listLayouts();
         const layouts = data.data as Array<Record<string, unknown>>;
-        for (const apiLayout of layouts) {
-          const layout = normalizeApiLayout(apiLayout);
-          if (opts.only && layout.slug !== opts.only) continue;
+        const targets = layouts.filter((l) => !opts.only || layoutSlug(l) === opts.only);
 
-          summary.total++;
-          const ok = saveLayout(layout, this.log);
-          if (ok) {
-            summary.created++;
-            summary.results.push({
-              workflowId: layout.layoutId,
-              action: "create",
-              detail: `Pulled layout ${layout.slug}`
-            });
-            if (opts.dryRun) this.log.info(`[DRY-RUN] Would pull layout: ${layout.slug}`);
-          } else {
+        // The list response does NOT include layout `content` — fetch each
+        // layout's detail before saving, otherwise local files are saved
+        // without bodies and never match remote again.
+        const settled = await mapWithConcurrency(targets, 5, async (apiLayout) => {
+          const slug = layoutSlug(apiLayout);
+          const full = await this.getLayoutFull(slug, apiLayout.layoutId as string);
+          return { slug, layout: normalizeApiLayout(full) };
+        });
+
+        for (const r of settled) {
+          if (r.status === "rejected") {
             summary.errors++;
-            summary.results.push({
-              workflowId: layout.layoutId,
-              action: "error",
-              detail: `Failed to save layout ${layout.slug}`
-            });
+            summary.results.push({ workflowId: "?", action: "error", detail: String(r.reason) });
+            continue;
+          }
+
+          const { slug, layout } = r.value;
+          summary.total++;
+
+          try {
+            const local = loadLayout(slug, this.log);
+            if (local && hashLayout(local) === layout.dashboardHash) {
+              summary.skipped++;
+              summary.results.push({ workflowId: layout.layoutId, action: "noop", detail: `${slug}: already up to date` });
+              if (dryRun) this.log.info(`[DRY-RUN] ${slug}: would skip (unchanged)`);
+              continue;
+            }
+
+            const action = local ? "update" : "create";
+            if (dryRun) {
+              this.log.info(`[DRY-RUN] Would ${action} layout: ${slug}`);
+              summary.results.push({ workflowId: layout.layoutId, action, detail: `Would ${action} ${slug}` });
+              continue;
+            }
+
+            const ok = saveLayout(layout, this.log);
+            if (ok) {
+              if (action === "create") summary.created++;
+              else summary.updated++;
+              summary.results.push({ workflowId: layout.layoutId, action, detail: `Pulled layout ${slug}` });
+              this.log.info(`[layout] ${slug}: pulled (${action})`);
+            } else {
+              summary.errors++;
+              summary.results.push({ workflowId: layout.layoutId, action: "error", detail: `Failed to save ${slug}` });
+            }
+          } catch (err) {
+            summary.errors++;
+            summary.results.push({ workflowId: layout.layoutId, action: "error", detail: String(err) });
           }
         }
       } catch (err) {
+        summary.errors++;
         this.log.error("Failed to list layouts for pull", { error: String(err) });
       }
     }
@@ -412,18 +625,19 @@ export class SyncEngine {
       const remote = await this.api.getWorkflow(workflowId);
       const remoteWf = normalizeApiWorkflow(remote);
 
-      // Drift guard
-      if (!opts.force && wf.dashboardHash && remoteWf.dashboardHash !== wf.dashboardHash) {
-        this.log.warn(`Drift detected for ${wf.slug} — remote has changed since last pull. Use --force to override.`);
-        return { workflowId: wf.slug, action: "skip", detail: "Drift guard: remote changed" };
-      }
-
       const localHash = hashWorkflow(wf);
-      const remoteHash = hashWorkflow(remoteWf);
+      const remoteHash = remoteWf.dashboardHash ?? "";
 
+      // In-sync check first — no drift warning when nothing actually changed.
       if (localHash === remoteHash) {
         this.log.info(`[workflow] ${wf.slug}: no changes`);
         return { workflowId: wf.slug, action: "noop", detail: "Already in sync" };
+      }
+
+      // Drift guard: remote changed since the last pull (stored hash stale).
+      if (!opts.force && wf.dashboardHash && remoteHash !== wf.dashboardHash) {
+        this.log.warn(`Drift detected for ${wf.slug} — remote has changed since last pull. Use --force to override.`);
+        return { workflowId: wf.slug, action: "skip", detail: "Drift guard: remote changed" };
       }
 
       if (opts.dryRun) {
@@ -435,7 +649,6 @@ export class SyncEngine {
 
       // Save the remote response so the local file mirrors what is on the dashboard
       const updatedWf = normalizeApiWorkflow(updated);
-      updatedWf.dashboardHash = hashWorkflow(updatedWf);
       saveWorkflow(updatedWf, this.log);
 
       this.log.info(`[workflow] ${wf.slug}: pushed successfully`);
@@ -472,17 +685,18 @@ export class SyncEngine {
       const remote = await this.api.getLayout(layout.slug);
       const remoteLayout = normalizeApiLayout(remote);
 
-      if (!opts.force && layout.dashboardHash && remoteLayout.dashboardHash !== layout.dashboardHash) {
-        this.log.warn(`Drift detected for layout ${layout.slug} — remote has changed. Use --force to override.`);
-        return { workflowId: layout.slug, action: "skip", detail: "Drift guard: remote changed" };
-      }
-
       const localHash = hashLayout(layout);
-      const remoteHash = hashLayout(remoteLayout);
+      const remoteHash = remoteLayout.dashboardHash ?? "";
 
+      // In-sync check first — no drift warning when nothing actually changed.
       if (localHash === remoteHash) {
         this.log.info(`[layout] ${layout.slug}: no changes`);
         return { workflowId: layout.slug, action: "noop", detail: "Already in sync" };
+      }
+
+      if (!opts.force && layout.dashboardHash && remoteHash !== layout.dashboardHash) {
+        this.log.warn(`Drift detected for layout ${layout.slug} — remote has changed. Use --force to override.`);
+        return { workflowId: layout.slug, action: "skip", detail: "Drift guard: remote changed" };
       }
 
       if (opts.dryRun) {
@@ -617,23 +831,23 @@ export class SyncEngine {
       return { workflowId: slug, action: "delete", detail: "Would delete (dry-run)" };
     }
 
-    // Remove locally
-    removeWorkflowDir(slug, this.log);
-
-    // Remove remotely
+    // Delete remotely FIRST — never destroy the local copy before the
+    // remote deletion is confirmed.
+    let remoteDetail = "Absent remotely";
     try {
       const remote = await this.api.getWorkflow(slug);
       await this.api.deleteWorkflow((remote.workflowId ?? remote._id) as string);
-      this.log.info(`[workflow] ${slug}: deleted`);
-      return { workflowId: slug, action: "delete", detail: "Deleted" };
+      remoteDetail = "Deleted remotely";
+      this.log.info(`[workflow] ${slug}: deleted remotely`);
     } catch (err) {
-      if (err instanceof ApiError && err.statusCode === 404) {
-        this.log.info(`[workflow] ${slug}: already absent remotely`);
-        return { workflowId: slug, action: "delete", detail: "Removed locally only" };
+      if (!(err instanceof ApiError && err.statusCode === 404)) {
+        this.log.error(`[workflow] ${slug}: failed to delete remotely — local copy kept`, { error: String(err) });
+        return { workflowId: slug, action: "error", detail: `Remote delete failed, local kept: ${String(err)}` };
       }
-      this.log.error(`[workflow] ${slug}: failed to delete remotely`, { error: String(err) });
-      return { workflowId: slug, action: "error", detail: String(err) };
     }
+
+    removeWorkflowDir(slug, this.log);
+    return { workflowId: slug, action: "delete", detail: remoteDetail };
   }
 
   // ─── Delete layout ──────────────────────────────────────────
@@ -644,34 +858,24 @@ export class SyncEngine {
       return { workflowId: slug, action: "delete", detail: "Would delete (dry-run)" };
     }
 
-    removeLayoutFile(slug, this.log);
-
+    let remoteDetail = "Absent remotely";
     try {
       const remote = await this.api.getLayout(slug);
       await this.api.deleteLayout(remote._id as string);
-      this.log.info(`[layout] ${slug}: deleted`);
-      return { workflowId: slug, action: "delete", detail: "Deleted" };
+      remoteDetail = "Deleted remotely";
+      this.log.info(`[layout] ${slug}: deleted remotely`);
     } catch (err) {
-      if (err instanceof ApiError && err.statusCode === 404) {
-        this.log.info(`[layout] ${slug}: already absent remotely`);
-        return { workflowId: slug, action: "delete", detail: "Removed locally only" };
+      if (!(err instanceof ApiError && err.statusCode === 404)) {
+        this.log.error(`[layout] ${slug}: failed to delete remotely — local copy kept`, { error: String(err) });
+        return { workflowId: slug, action: "error", detail: `Remote delete failed, local kept: ${String(err)}` };
       }
-      this.log.error(`[layout] ${slug}: failed to delete remotely`, { error: String(err) });
-      return { workflowId: slug, action: "error", detail: String(err) };
     }
+
+    removeLayoutFile(slug, this.log);
+    return { workflowId: slug, action: "delete", detail: remoteDetail };
   }
 
   // ─── Helpers ────────────────────────────────────────────────
-
-  private async resolveNotificationGroupId(): Promise<string | undefined> {
-    try {
-      const groups = await this.api.listNotificationGroups();
-      return (groups[0]?._id as string) ?? undefined;
-    } catch (err) {
-      this.log.warn("Failed to list Novu notification groups", { error: String(err) });
-      return undefined;
-    }
-  }
 
   private aggregate(summary: SyncSummary, result: SyncResult): void {
     summary.results.push(result);
@@ -690,6 +894,9 @@ export class SyncEngine {
         break;
       case "error":
         summary.errors++;
+        break;
+      case "noop":
+        summary.skipped++;
         break;
     }
   }

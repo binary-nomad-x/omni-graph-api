@@ -48,3 +48,23 @@ export function printElapsed(start: number): void {
   const elapsed = ((Date.now() - start) / 1000).toFixed(1);
   logger.info(`Seeding complete in ${elapsed}s`);
 }
+
+/**
+ * Bulk-insert in chunks. Postgres has a 65,535 bind-parameter limit per
+ * statement, so very large createMany batches (many rows × many columns) can
+ * fail with "too many parameters". Chunking keeps each statement well under it.
+ */
+export async function createManyChunked<T>(
+  delegate: { createMany(args: { data: T[]; skipDuplicates?: boolean }): Promise<{ count: number }> },
+  data: T[],
+  chunkSize = 500,
+  skipDuplicates = false,
+): Promise<number> {
+  if (data.length === 0) return 0;
+  let inserted = 0;
+  for (let i = 0; i < data.length; i += chunkSize) {
+    const result = await delegate.createMany({ data: data.slice(i, i + chunkSize), skipDuplicates });
+    inserted += result.count;
+  }
+  return inserted;
+}

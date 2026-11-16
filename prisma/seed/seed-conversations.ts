@@ -1,9 +1,34 @@
 import { faker } from "@faker-js/faker";
 import type { SeedContext, SeedCounts, MessageSeed } from "./types.js";
+import { createManyChunked } from "./utils.js";
 
 export async function seedConversations(ctx: SeedContext, counts: SeedCounts, userIds: string[]): Promise<void> {
   const conversationCount = Math.floor(userIds.length * 0.6);
   const usedPairs = new Set<string>();
+
+  const conversationData: {
+    id: string;
+    title: string;
+    type: string;
+    isArchived: boolean;
+    isMuted: boolean;
+    participantCount: number;
+    lastMessageAt: Date;
+    lastMessageContent: string;
+    lastMessageSenderId: string;
+    metadata: object;
+  }[] = [];
+  const participantData: {
+    conversationId: string;
+    userId: string;
+    nickname: string | null;
+    role: string;
+    isMuted: boolean;
+    notificationsEnabled: boolean;
+    lastReadAt: Date;
+    pinnedAt: Date | null;
+  }[] = [];
+  const messageData: MessageSeed[] = [];
 
   for (let i = 0; i < conversationCount; i++) {
     let userA: string;
@@ -18,51 +43,8 @@ export async function seedConversations(ctx: SeedContext, counts: SeedCounts, us
 
     usedPairs.add(pairKey);
 
-    const conversation = await ctx.prisma.conversation.create({
-      data: {
-        title: faker.lorem.words(3),
-        type: "direct",
-        isArchived: Math.random() > 0.92,
-        isMuted: Math.random() > 0.85,
-        participantCount: 2,
-        metadata: {
-          initiatedBy: userA,
-          topic: faker.lorem.word(),
-        },
-      },
-    });
-
-    counts.conversations++;
-
-    await ctx.prisma.conversationParticipant.createMany({
-      data: [
-        {
-          conversationId: conversation.id,
-          userId: userA,
-          nickname: Math.random() > 0.6 ? faker.internet.username() : null,
-          role: faker.helpers.arrayElement(["member", "member", "member", "admin", "moderator"]),
-          isMuted: Math.random() > 0.9,
-          notificationsEnabled: faker.datatype.boolean({ probability: 0.85 }),
-          lastReadAt: faker.date.past(),
-          pinnedAt: Math.random() > 0.85 ? faker.date.past() : null,
-        },
-        {
-          conversationId: conversation.id,
-          userId: userB,
-          nickname: Math.random() > 0.6 ? faker.internet.username() : null,
-          role: faker.helpers.arrayElement(["member", "member", "member", "admin"]),
-          isMuted: Math.random() > 0.9,
-          notificationsEnabled: faker.datatype.boolean({ probability: 0.85 }),
-          lastReadAt: faker.date.past(),
-          pinnedAt: Math.random() > 0.85 ? faker.date.past() : null,
-        },
-      ],
-    });
-
-    counts.participants += 2;
-
+    const conversationId = crypto.randomUUID();
     const messageCount = faker.number.int({ min: 5, max: 15 });
-    const messages: MessageSeed[] = [];
 
     for (let m = 0; m < messageCount; m++) {
       const sender = m % 2 === 0 ? userA : userB;
@@ -87,8 +69,8 @@ export async function seedConversations(ctx: SeedContext, counts: SeedCounts, us
             }
           : null;
 
-      messages.push({
-        conversationId: conversation.id,
+      messageData.push({
+        conversationId,
         senderId: sender,
         content: faker.lorem.sentences({ min: 1, max: 4 }),
         type: messageType,
@@ -102,18 +84,53 @@ export async function seedConversations(ctx: SeedContext, counts: SeedCounts, us
       });
     }
 
-    await ctx.prisma.message.createMany({ data: messages });
-    counts.messages += messages.length;
+    const lastMsg = messageData[messageData.length - 1];
 
-    // Update last message info
-    const lastMsg = messages[messages.length - 1];
-    await ctx.prisma.conversation.update({
-      where: { id: conversation.id },
-      data: {
-        lastMessageAt: new Date(),
-        lastMessageContent: lastMsg.content,
-        lastMessageSenderId: lastMsg.senderId,
+    conversationData.push({
+      id: conversationId,
+      title: faker.lorem.words(3),
+      type: "direct",
+      isArchived: Math.random() > 0.92,
+      isMuted: Math.random() > 0.85,
+      participantCount: 2,
+      lastMessageAt: new Date(),
+      lastMessageContent: lastMsg.content,
+      lastMessageSenderId: lastMsg.senderId,
+      metadata: {
+        initiatedBy: userA,
+        topic: faker.lorem.word(),
       },
     });
+
+    participantData.push(
+      {
+        conversationId,
+        userId: userA,
+        nickname: Math.random() > 0.6 ? faker.internet.username() : null,
+        role: faker.helpers.arrayElement(["member", "member", "member", "admin", "moderator"]),
+        isMuted: Math.random() > 0.9,
+        notificationsEnabled: faker.datatype.boolean({ probability: 0.85 }),
+        lastReadAt: faker.date.past(),
+        pinnedAt: Math.random() > 0.85 ? faker.date.past() : null,
+      },
+      {
+        conversationId,
+        userId: userB,
+        nickname: Math.random() > 0.6 ? faker.internet.username() : null,
+        role: faker.helpers.arrayElement(["member", "member", "member", "admin"]),
+        isMuted: Math.random() > 0.9,
+        notificationsEnabled: faker.datatype.boolean({ probability: 0.85 }),
+        lastReadAt: faker.date.past(),
+        pinnedAt: Math.random() > 0.85 ? faker.date.past() : null,
+      },
+    );
   }
+
+  await ctx.prisma.conversation.createMany({ data: conversationData });
+  await createManyChunked(ctx.prisma.conversationParticipant, participantData, 500, true);
+  await createManyChunked(ctx.prisma.message, messageData);
+
+  counts.conversations += conversationData.length;
+  counts.participants += participantData.length;
+  counts.messages += messageData.length;
 }

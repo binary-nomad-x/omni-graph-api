@@ -1,5 +1,6 @@
 import { faker } from "@faker-js/faker";
 import type { SeedContext, SeedCounts } from "./types.js";
+import { createManyChunked } from "./utils.js";
 
 const ORDER_STATUSES = ["PENDING", "CONFIRMED", "PROCESSING", "SHIPPED", "DELIVERED", "CANCELLED"];
 
@@ -14,8 +15,11 @@ export async function seedOrders(
     where: { id: { in: productIds } },
     select: { id: true, price: true, name: true, sku: true, imageUrl: true, stock: true },
   });
-
   const productMap = new Map(products.map((p) => [p.id, p]));
+
+  const coupons = couponIds.length > 0 ? await ctx.prisma.coupon.findMany({ where: { id: { in: couponIds } } }) : [];
+  const couponMap = new Map(coupons.map((c) => [c.id, c]));
+
   const orderIds = Array.from({ length: Math.floor(userIds.length * 4) }, () => crypto.randomUUID());
 
   const orderData: {
@@ -25,10 +29,12 @@ export async function seedOrders(
     subtotal: number;
     taxAmount: number;
     shippingAmount: number;
+    discountAmount: number;
+    totalAmount: number;
     currency: string;
-    shippingAddress: string;
-    email: string;
-    phone: string;
+    shippingAddress: string | null;
+    email: string | null;
+    phone: string | null;
     notes: string | null;
     source: string;
     isGift: boolean;
@@ -56,20 +62,21 @@ export async function seedOrders(
   for (const orderId of orderIds) {
     const status = faker.helpers.arrayElement(ORDER_STATUSES);
     const userId = faker.helpers.arrayElement(userIds);
-    const useCoupon = couponIds.length > 0 && Math.random() > 0.65;
-    const couponId = useCoupon ? faker.helpers.arrayElement(couponIds) : null;
+    const couponId = couponIds.length > 0 && Math.random() > 0.65 ? faker.helpers.arrayElement(couponIds) : null;
     const isCancelled = status === "CANCELLED";
     const hasTracking = status === "SHIPPED" || status === "DELIVERED";
     const shippingAmount = parseFloat(faker.commerce.price({ min: 5, max: 25 }));
     const taxRate = faker.helpers.arrayElement([0.05, 0.07, 0.08, 0.1, 0.0]);
 
-    orderData.push({
+    const order: (typeof orderData)[number] = {
       id: orderId,
       userId,
       status,
       subtotal: 0,
       taxAmount: 0,
       shippingAmount,
+      discountAmount: 0,
+      totalAmount: 0,
       currency: "USD",
       shippingAddress: faker.location.streetAddress(),
       email: faker.internet.email().toLowerCase(),
@@ -86,10 +93,11 @@ export async function seedOrders(
       cancelReason: isCancelled
         ? faker.helpers.arrayElement(["Changed mind", "Found better price", "Ordered by mistake", "Shipping too slow", "Duplicate order"])
         : null,
-    });
+    };
 
     const itemCount = faker.number.int({ min: 1, max: 5 });
     let subtotal = 0;
+    let itemDiscount = 0;
 
     for (let j = 0; j < itemCount; j++) {
       const productId = faker.helpers.arrayElement(productIds);
@@ -100,6 +108,7 @@ export async function seedOrders(
       const discountAmount =
         Math.random() > 0.4 ? parseFloat((totalPrice * faker.helpers.arrayElement([0.05, 0.1, 0.15, 0.2])).toFixed(2)) : 0;
       subtotal += totalPrice;
+      itemDiscount += discountAmount;
       itemData.push({
         orderId,
         productId,
@@ -114,51 +123,13 @@ export async function seedOrders(
       });
     }
 
-    const order = orderData[orderData.length - 1];
-    order.subtotal = subtotal;
-    order.taxAmount = parseFloat((subtotal * taxRate).toFixed(2));
-  }
-
-  await ctx.prisma.order.createMany({
-    data: orderData.map((o) => ({
-      ...o,
-      notes: o.notes || null,
-      giftMessage: o.giftMessage || null,
-      cancelReason: o.cancelReason || null,
-      trackingUrl: o.trackingUrl || null,
-    })),
-  });
-  counts.orders += orderData.length;
-
-  await ctx.prisma.orderItem.createMany({ data: itemData });
-  counts.orderItems += itemData.length;
-
-  // Calculate totals per order and update
-  const orderTotals = new Map<string, { subtotal: number; tax: number; shipping: number; itemDiscount: number }>();
-
-  for (const item of itemData) {
-    const current = orderTotals.get(item.orderId) ?? { subtotal: 0, tax: 0, shipping: 0, itemDiscount: 0 };
-    current.subtotal += item.totalPrice;
-    current.tax += item.taxAmount;
-    current.itemDiscount += item.discountAmount ?? 0;
-    orderTotals.set(item.orderId, current);
-  }
-
-  const coupons = await ctx.prisma.coupon.findMany({
-    where: { id: { in: couponIds } },
-  });
-  const couponMap = new Map(coupons.map((c) => [c.id, c]));
-
-  for (const order of orderData) {
-    const totals = orderTotals.get(order.id);
-    if (!totals) continue;
-
-    let discount = totals.itemDiscount;
-    if (order.couponId) {
-      const coupon = couponMap.get(order.couponId);
+    // Coupon discount — same math as before, but computed in memory.
+    let discount = itemDiscount;
+    if (couponId) {
+      const coupon = couponMap.get(couponId);
       if (coupon) {
         if (coupon.discountPercent > 0) {
-          let couponDiscount = Math.round(totals.subtotal * (coupon.discountPercent / 100) * 100) / 100;
+          let couponDiscount = Math.round(subtotal * (coupon.discountPercent / 100) * 100) / 100;
           if (coupon.maxDiscountAmount > 0) {
             couponDiscount = Math.min(couponDiscount, coupon.maxDiscountAmount);
           }
@@ -169,27 +140,22 @@ export async function seedOrders(
       }
     }
 
-    discount = Math.min(discount, totals.subtotal);
-    const totalAmount = totals.subtotal + totals.tax + totals.shipping - discount;
+    discount = Math.min(discount, subtotal);
+    const taxAmount = parseFloat((subtotal * taxRate).toFixed(2));
 
-    await ctx.prisma.order.update({
-      where: { id: order.id },
-      data: {
-        totalAmount: parseFloat(totalAmount.toFixed(2)),
-        subtotal: totals.subtotal,
-        taxAmount: totals.tax,
-        shippingAmount: totals.shipping,
-        discountAmount: parseFloat(discount.toFixed(2)),
-        shippingAddress: order.shippingAddress || null,
-        email: order.email || null,
-        phone: order.phone || null,
-        notes: order.notes || null,
-        giftMessage: order.giftMessage || null,
-        trackingUrl: order.trackingUrl || null,
-        cancelReason: order.cancelReason || null,
-      },
-    });
+    order.subtotal = subtotal;
+    order.taxAmount = taxAmount;
+    order.discountAmount = parseFloat(discount.toFixed(2));
+    order.totalAmount = parseFloat((subtotal + taxAmount + shippingAmount - discount).toFixed(2));
+
+    orderData.push(order);
   }
+
+  await createManyChunked(ctx.prisma.order, orderData);
+  await createManyChunked(ctx.prisma.orderItem, itemData);
+
+  counts.orders += orderData.length;
+  counts.orderItems += itemData.length;
 
   return orderIds;
 }

@@ -1,5 +1,6 @@
 import { faker } from "@faker-js/faker";
 import type { SeedContext, SeedCounts, CartItemSeed } from "./types.js";
+import { createManyChunked } from "./utils.js";
 
 export async function seedCarts(ctx: SeedContext, counts: SeedCounts, userIds: string[], productIds: string[]): Promise<void> {
   const products = await ctx.prisma.product.findMany({
@@ -7,24 +8,25 @@ export async function seedCarts(ctx: SeedContext, counts: SeedCounts, userIds: s
     select: { id: true, price: true },
   });
 
-  for (const userId of userIds) {
-    const cart = await ctx.prisma.cart.create({
-      data: {
-        userId,
-        notes: faker.lorem.text(),
-        subtotal: 0,
-        total: 0,
-        currency: "USD",
-        couponCode: faker.datatype.boolean({ probability: 0.2 }) ? faker.string.alphanumeric({ length: 10, casing: "upper" }) : null,
-        discountAmount: 0,
-        sessionId: faker.string.alphanumeric(24),
-        expiresAt: faker.date.future({ years: 1 }),
-      },
-    });
-    counts.carts++;
+  const cartIds = userIds.map(() => crypto.randomUUID());
 
+  const cartData: {
+    id: string;
+    userId: string;
+    notes: string | null;
+    subtotal: number;
+    total: number;
+    currency: string;
+    couponCode: string | null;
+    discountAmount: number;
+    sessionId: string;
+    expiresAt: Date;
+  }[] = [];
+  const items: CartItemSeed[] = [];
+
+  for (let u = 0; u < userIds.length; u++) {
+    const cartId = cartIds[u];
     const itemCount = faker.number.int({ min: 1, max: 5 });
-    const items: CartItemSeed[] = [];
     const used = new Set<string>();
     let subtotal = 0;
     let totalDiscount = 0;
@@ -44,7 +46,7 @@ export async function seedCarts(ctx: SeedContext, counts: SeedCounts, userIds: s
       totalDiscount += discountAmount;
 
       items.push({
-        cartId: cart.id,
+        cartId,
         productId: product.id,
         quantity,
         unitPrice: product.price,
@@ -55,22 +57,24 @@ export async function seedCarts(ctx: SeedContext, counts: SeedCounts, userIds: s
       });
     }
 
-    if (items.length > 0) {
-      await ctx.prisma.cartItem.createMany({
-        data: items,
-        skipDuplicates: true,
-      });
-
-      counts.cartItems += items.length;
-
-      await ctx.prisma.cart.update({
-        where: { id: cart.id },
-        data: {
-          subtotal: parseFloat(subtotal.toFixed(2)),
-          discountAmount: parseFloat(totalDiscount.toFixed(2)),
-          total: parseFloat((subtotal - totalDiscount).toFixed(2)),
-        },
-      });
-    }
+    // Totals are computed up front — no per-cart update pass needed.
+    cartData.push({
+      id: cartId,
+      userId: userIds[u],
+      notes: faker.lorem.text(),
+      subtotal: parseFloat(subtotal.toFixed(2)),
+      total: parseFloat((subtotal - totalDiscount).toFixed(2)),
+      currency: "USD",
+      couponCode: faker.datatype.boolean({ probability: 0.2 }) ? faker.string.alphanumeric({ length: 10, casing: "upper" }) : null,
+      discountAmount: parseFloat(totalDiscount.toFixed(2)),
+      sessionId: faker.string.alphanumeric(24),
+      expiresAt: faker.date.future({ years: 1 }),
+    });
   }
+
+  await ctx.prisma.cart.createMany({ data: cartData });
+  await createManyChunked(ctx.prisma.cartItem, items, 500, true);
+
+  counts.carts += cartData.length;
+  counts.cartItems += items.length;
 }

@@ -74,13 +74,14 @@ export function saveWorkflow(wf: WorkflowJson, log: RunLogger): boolean {
     }
     const cv = { ...(step.controlValues ?? {}) };
     delete cv.body;
+    // `variables` is a Novu-derived schema blob (hundreds of lines per step).
+    // It adds no value locally and is excluded from hashing anyway — drop it.
     steps.push({
       stepId: step.stepId,
       name: step.name,
       type: step.type,
       bodyFile: body ? bodyFile : step.bodyFile,
       controlValues: Object.keys(cv).length > 0 ? cv : undefined,
-      variables: step.variables,
     });
   }
 
@@ -139,11 +140,15 @@ export function saveLayout(layout: LayoutJson, log: RunLogger): boolean {
     ensureDir(bodiesDir);
     bodyFile = `${layout.slug}.html`;
     writeTextAtomic(resolve(bodiesDir, bodyFile), layout.content, log);
+  } else {
+    // No content in this payload — drop any stale body reference so a later
+    // loadLayout() doesn't resurrect an outdated body file.
+    bodyFile = undefined;
   }
 
   return writeJsonAtomic(
     resolve(LAYOUTS_DIR, `${layout.slug}.json`),
-    { ...layout, content: undefined, bodyFile: bodyFile ?? layout.bodyFile },
+    { ...layout, content: undefined, bodyFile },
     log,
   );
 }

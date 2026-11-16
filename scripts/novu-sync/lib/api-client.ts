@@ -14,25 +14,48 @@ export class ApiError extends Error {
   }
 }
 
+const REQUEST_TIMEOUT_MS = 30_000;
+const MAX_RETRIES = 3;
+
 function parseUrl(base: string, path: string): URL {
   return new URL(path, base.endsWith("/") ? base : base + "/");
 }
 
-function httpRequestPromise(url: URL, options: RequestOptions, body?: string): Promise<{ statusCode: number; body: string }> {
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function httpRequestPromise(
+  url: URL,
+  options: RequestOptions,
+  body?: string,
+): Promise<{ statusCode: number; body: string }> {
   return new Promise((resolve, reject) => {
     const mod = url.protocol === "https:" ? httpsRequest : httpRequest;
     const req = mod(url, options, (res) => {
       const chunks: Buffer[] = [];
       res.on("data", (chunk: Buffer) => chunks.push(chunk));
       res.on("end", () => {
-        const body = Buffer.concat(chunks).toString("utf-8");
-        resolve({ statusCode: res.statusCode ?? 500, body });
+        resolve({ statusCode: res.statusCode ?? 500, body: Buffer.concat(chunks).toString("utf-8") });
       });
     });
+    // Node's `timeout` option only emits an event — without destroying the
+    // socket a stalled connection would hang the CLI forever.
+    req.on("timeout", () => req.destroy(new Error(`Request timed out after ${options.timeout}ms`)));
     req.on("error", (err) => reject(err));
     if (body) req.write(body);
     req.end();
   });
+}
+
+function isRetryableStatus(statusCode: number): boolean {
+  return statusCode === 429 || (statusCode >= 500 && statusCode < 600);
+}
+
+function isRetryableError(err: unknown): boolean {
+  if (err instanceof ApiError) return isRetryableStatus(err.statusCode);
+  // Network-level errors (timeout, socket reset, DNS) are retryable.
+  return true;
 }
 
 export class NovuApiClient {
@@ -50,62 +73,53 @@ export class NovuApiClient {
     if (!this.apiKey) throw new ApiError(401, "NOVU_API_SECRET_KEY is not set in .env");
 
     const url = parseUrl(this.baseUrl, path);
-    const headers: Record<string, string> = {
+    const headers: Record<string, string | number> = {
       Authorization: `ApiKey ${this.apiKey}`,
       "Content-Type": "application/json",
     };
+    const jsonBody = body === undefined ? undefined : JSON.stringify(body);
+    if (jsonBody !== undefined) headers["Content-Length"] = Buffer.byteLength(jsonBody);
 
-    const maxRetries = 3;
-    let lastError: Error | null = null;
+    let lastError: Error = new Error(`Request failed: ${path}`);
 
-    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
       try {
-        const options: RequestOptions = {
-          method,
-          headers,
-          timeout: 15000,
-        };
+        const res = await httpRequestPromise(url, { method, headers, timeout: REQUEST_TIMEOUT_MS }, jsonBody);
 
-        const jsonBody = body ? JSON.stringify(body) : undefined;
-        if (jsonBody) headers["Content-Length"] = Buffer.byteLength(jsonBody).toString();
-
-        const res = await httpRequestPromise(url, { ...options, headers }, jsonBody);
-
-        if (res.statusCode === 429 || (res.statusCode >= 500 && res.statusCode < 600)) {
-          if (attempt < maxRetries) {
-            const delay = Math.pow(2, attempt) * 1000 + Math.random() * 1000;
-            this.log.warn(`Retry ${attempt}/${maxRetries} after ${res.statusCode}`, { path, delayMs: Math.round(delay) });
-            await new Promise((r) => setTimeout(r, delay));
-            continue;
-          }
+        if (isRetryableStatus(res.statusCode) && attempt < MAX_RETRIES) {
+          const delay = Math.pow(2, attempt) * 1000 + Math.random() * 1000;
+          this.log.warn(`Retry ${attempt}/${MAX_RETRIES} after ${res.statusCode}`, { path, delayMs: Math.round(delay) });
+          await sleep(delay);
+          continue;
         }
 
         if (res.statusCode === 401) throw new ApiError(401, "Authentication failed — check NOVU_API_SECRET_KEY");
         if (res.statusCode === 404) throw new ApiError(404, `Not found: ${path}`);
         if (res.statusCode === 409) throw new ApiError(409, `Conflict: ${res.body}`);
-
-        if (res.statusCode! >= 400) {
+        if (res.statusCode >= 400) {
           let parsed: unknown;
-          try { parsed = JSON.parse(res.body); } catch { parsed = res.body; }
-          throw new ApiError(res.statusCode!, `API error: ${res.body}`, parsed);
+          try {
+            parsed = JSON.parse(res.body);
+          } catch {
+            parsed = res.body;
+          }
+          throw new ApiError(res.statusCode, `API error ${res.statusCode} on ${path}`, parsed);
         }
 
         if (!res.body) return undefined as T;
         return JSON.parse(res.body) as T;
       } catch (err) {
+        if (!isRetryableError(err)) throw err;
         lastError = err instanceof Error ? err : new Error(String(err));
-        if (err instanceof ApiError && err.statusCode !== 429 && (err.statusCode < 500 || err.statusCode >= 600)) {
-          throw err;
-        }
-        if (attempt < maxRetries) {
+        if (attempt < MAX_RETRIES) {
           const delay = Math.pow(2, attempt) * 500;
-          this.log.warn(`Retry ${attempt}/${maxRetries} after error`, { error: lastError.message, delayMs: delay });
-          await new Promise((r) => setTimeout(r, delay));
+          this.log.warn(`Retry ${attempt}/${MAX_RETRIES} after error`, { path, error: lastError.message, delayMs: delay });
+          await sleep(delay);
         }
       }
     }
 
-    throw lastError ?? new Error("Max retries exceeded");
+    throw lastError;
   }
 
   // ─── Notification groups ────────────────────────────────────
@@ -115,12 +129,32 @@ export class NovuApiClient {
 
   // ─── Workflows (Novu v2 API) ────────────────────────────────
 
-  async listWorkflows(page = 0, limit = 50): Promise<{ data: Array<Record<string, unknown>>; totalCount: number }> {
-    const raw = await this.request<{ data: { workflows: Array<Record<string, unknown>>; totalCount: number } }>(
-      "GET",
-      `/v2/workflows?limit=${limit}`,
-    );
-    return { data: raw.data?.workflows ?? [], totalCount: raw.data?.totalCount ?? 0 };
+  /**
+   * Fetch ALL workflows by paging through the v2 list endpoint.
+   * The previous version ignored the `page` parameter, so any workflow beyond
+   * the first page was silently invisible to list/status/pull.
+   */
+  async listWorkflows(pageSize = 50): Promise<{ data: Array<Record<string, unknown>>; totalCount: number }> {
+    const all: Array<Record<string, unknown>> = [];
+    let totalCount = 0;
+    let page = 0;
+
+    // Hard cap to avoid infinite loops on a misbehaving API.
+    while (page < 200) {
+      const raw = await this.request<{ data: { workflows?: Array<Record<string, unknown>>; totalCount?: number; hasMore?: boolean } }>(
+        "GET",
+        `/v2/workflows?page=${page}&limit=${pageSize}`,
+      );
+      const workflows = raw.data?.workflows ?? [];
+      totalCount = raw.data?.totalCount ?? all.length + workflows.length;
+      all.push(...workflows);
+
+      const hasMore = raw.data?.hasMore ?? all.length < totalCount;
+      if (workflows.length === 0 || !hasMore) break;
+      page++;
+    }
+
+    return { data: all, totalCount };
   }
 
   async getWorkflow(workflowId: string): Promise<Record<string, unknown>> {
@@ -142,13 +176,32 @@ export class NovuApiClient {
     await this.request("DELETE", `/v2/workflows/${workflowId}`);
   }
 
-  // ─── Layouts ─────────────────────────────────────────────────
-  async listLayouts(page = 0, limit = 50): Promise<{ data: Array<Record<string, unknown>>; totalCount: number }> {
-    return this.request("GET", `/v1/layouts?page=${page}&limit=${limit}`);
+  // ─── Layouts (Novu v1 API) ──────────────────────────────────
+
+  /** Fetch ALL layouts by paging through the v1 list endpoint. */
+  async listLayouts(pageSize = 50): Promise<{ data: Array<Record<string, unknown>>; totalCount: number }> {
+    const all: Array<Record<string, unknown>> = [];
+    let totalCount = 0;
+    let page = 0;
+
+    while (page < 200) {
+      const raw = await this.request<{ data?: Array<Record<string, unknown>>; totalCount?: number }>(
+        "GET",
+        `/v1/layouts?page=${page}&limit=${pageSize}`,
+      );
+      const layouts = raw.data ?? [];
+      totalCount = raw.totalCount ?? all.length + layouts.length;
+      all.push(...layouts);
+
+      if (layouts.length === 0 || all.length >= totalCount) break;
+      page++;
+    }
+
+    return { data: all, totalCount };
   }
 
-  async getLayout(layoutId: string): Promise<Record<string, unknown>> {
-    const raw = await this.request<{ data?: Record<string, unknown> }>("GET", `/v1/layouts/${layoutId}`);
+  async getLayout(layoutIdOrIdentifier: string): Promise<Record<string, unknown>> {
+    const raw = await this.request<{ data?: Record<string, unknown> }>("GET", `/v1/layouts/${layoutIdOrIdentifier}`);
     return (raw?.data ?? raw) as Record<string, unknown>;
   }
 
@@ -161,6 +214,6 @@ export class NovuApiClient {
   }
 
   async deleteLayout(layoutId: string): Promise<void> {
-    return this.request("DELETE", `/v1/layouts/${layoutId}`);
+    await this.request("DELETE", `/v1/layouts/${layoutId}`);
   }
 }

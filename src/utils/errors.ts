@@ -39,3 +39,9 @@ export function requireOwner(ownerId: string, userId?: string): void {
     throw new ForbiddenError();
   }
 }
+
+export function requireRole(userRole: string | undefined, roles: string[]): void {
+  if (!userRole || !roles.includes(userRole)) {
+    throw new ForbiddenError(`Requires role: ${roles.join(" or ")}`);
+  }
+}

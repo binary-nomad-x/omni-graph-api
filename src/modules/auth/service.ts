@@ -30,7 +30,7 @@ export class AuthService {
     await triggerNovuWorkflow(user.id, "welcome", { userName: user.name ?? user.email });
 
     return {
-      token: generateToken({ userId: user.id, email: user.email }),
+      token: generateToken({ userId: user.id, email: user.email, role: user.role }),
       user,
     };
   }
@@ -43,7 +43,7 @@ export class AuthService {
     }
     logger.info("User logged in", { userId: user.id, email: user.email });
     return {
-      token: generateToken({ userId: user.id, email: user.email }),
+      token: generateToken({ userId: user.id, email: user.email, role: user.role }),
       user,
     };
   }
