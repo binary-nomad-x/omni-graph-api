@@ -127,6 +127,61 @@ export async function rateLimit(key: string, limit: number, windowSeconds: numbe
   }
 }
 
+// ─── Pub/Sub ───────────────────────────────────────────────────────────
+
+// Dedicated connections: a subscriber connection enters subscriber mode and
+// cannot run regular commands, so it must be separate from the shared client.
+let subscriberClient: Redis | null = null;
+
+function getSubscriberClient(): Redis {
+  if (!subscriberClient) {
+    subscriberClient = new Redis(process.env.REDIS_URL!, { maxRetriesPerRequest: null });
+    subscriberClient.on("error", (err) => {
+      logger.error("Redis subscriber error", { error: err.message });
+    });
+  }
+  return subscriberClient;
+}
+
+/** Publish a JSON message to a channel. Returns number of subscribers reached. */
+export async function publishEvent(channel: string, message: Record<string, unknown>): Promise<number> {
+  try {
+    return await redisConnection.publish(channel, JSON.stringify({ ...message, publishedAt: new Date().toISOString() }));
+  } catch (err) {
+    logger.warning("Redis publish failed", { channel, error: String(err) });
+    return 0;
+  }
+}
+
+/**
+ * Subscribe to a channel and invoke the handler for each message.
+ * Returns an unsubscribe function.
+ */
+export async function subscribeToChannel(
+  channel: string,
+  handler: (message: Record<string, unknown>) => void,
+): Promise<() => Promise<void>> {
+  const sub = getSubscriberClient();
+  await sub.subscribe(channel);
+  logger.info("Redis subscribed to channel", { channel });
+
+  const onMessage = (ch: string, raw: string): void => {
+    if (ch !== channel) return;
+    try {
+      handler(JSON.parse(raw) as Record<string, unknown>);
+    } catch (err) {
+      logger.warning("Redis message handler failed", { channel, error: String(err) });
+    }
+  };
+  sub.on("message", onMessage);
+
+  return async () => {
+    sub.off("message", onMessage);
+    await sub.unsubscribe(channel);
+    logger.info("Redis unsubscribed from channel", { channel });
+  };
+}
+
 // ─── Connection health ────────────────────────────────────────────────
 
 export async function redisPing(): Promise<boolean> {
@@ -140,6 +195,11 @@ export async function redisPing(): Promise<boolean> {
 
 export async function closeRedis(): Promise<void> {
   try {
+    if (subscriberClient) {
+      subscriberClient.disconnect();
+      subscriberClient = null;
+      logger.info("Redis subscriber connection closed");
+    }
     await redisConnection.quit();
     logger.info("Redis connection closed");
   } catch {

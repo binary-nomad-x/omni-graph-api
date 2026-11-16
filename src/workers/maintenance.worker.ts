@@ -19,7 +19,5 @@ export const maintenanceWorker = new Worker(
   },
   {
     connection: redisConnection as any,
-    attempts: 3,
-    backoff: { type: "exponential", delay: 5000 },
   },
 );
